@@ -11,6 +11,8 @@ public class Movimiento : MonoBehaviour
 
 	GameObject actual;
 
+	public PerfectDetectorManager latest;
+
 	public bool release = false;
 
 	bool moviendoY = false;
@@ -19,6 +21,16 @@ public class Movimiento : MonoBehaviour
 	private int xDirection = 1;   // dirección de movimiento: 1 o -1
 
 	float startPosX = 0;// Start is called once before the first execution of Update after the MonoBehaviour is created
+
+	bool spawn = false;
+
+	bool muerto = false;
+
+	public int numberTowerSize = 0;
+
+	int maxSize = 0;
+
+	bool last = false;
 	void Start()
     {
 		actual = Instantiate(prefab1,spawner.transform,true);
@@ -34,6 +46,37 @@ public class Movimiento : MonoBehaviour
 
 	private void FixedUpdate()
 	{
+        if (last)
+        {
+			return;
+        }
+
+        if (muerto)
+        {
+			return;
+        }
+
+
+        if (spawn)
+		{
+			if(!latest.check)
+			{
+				//for (int i = 0; i < latest.detectors.Length; i++)
+				//{
+				//	if (latest.detectors[i].enter)
+				//	{
+				//		muerto = true;
+
+				//	}
+				//}
+				return;
+			}
+			else
+			{
+				Spawn();
+			}
+		}
+
 		if (spawner != null && !release && !moviendoY)
 		{
 			// Actualizar progreso
@@ -62,6 +105,10 @@ public class Movimiento : MonoBehaviour
 		}
 	}
 
+	public void SetMaxSize(int i)
+	{
+		maxSize = i;
+	}
 	void Release()
 	{
 
@@ -90,15 +137,40 @@ public class Movimiento : MonoBehaviour
 
 		StartCoroutine(MoverSpawnerY(8f, 0.25f)); // sube 10 unidades en 0.5 segundos
 
-		Invoke(nameof(Spawn), 0.25f);
+		Invoke(nameof(SetSpawn), 0.25f);
 	}
 
+	void SetSpawn()
+	{
+		spawn = true;
+	}
 	void Spawn()
 	{
+		numberTowerSize++;
+		latest = actual.GetComponentInChildren<PerfectDetectorManager>();
+
+        if (numberTowerSize == maxSize)
+        {
+			last = true;
+			return;
+		}
+
+
+		if (numberTowerSize == maxSize-1)
+		{
+			actual = Instantiate(prefab3, spawner.transform, true);
+		}
+		else
+		{
+			actual = Instantiate(prefab2, spawner.transform, true);
+		}
+
+		spawn = false;
 		release = false;
-		actual = Instantiate(prefab2, spawner.transform, true);
 		actual.transform.localPosition = Vector3.zero;
 		Invoke(nameof(StopRelease), 0.1f);
+
+
 
 	}
 

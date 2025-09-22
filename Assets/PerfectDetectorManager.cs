@@ -5,7 +5,7 @@ public class PerfectDetectorManager : MonoBehaviour
     public PerfectDetectorTrigger[] detectors;
 
     GameObject target;
-    bool check = false;
+    public bool check = false;
 	// Start is called once before the first execution of Update after the MonoBehaviour is created
 	void Start()
     {
