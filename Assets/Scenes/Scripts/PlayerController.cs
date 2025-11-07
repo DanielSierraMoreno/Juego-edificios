@@ -49,9 +49,12 @@ public class PlayerController : MonoBehaviour
 	enum Direction { LEFTUP, RIGHTUP, LEFTDOWN, RIGHTDOWN, NONE};
 	Direction direction = Direction.NONE;
 	public static PlayerController Instance { get; private set; }
+	LevelConditions levelConditions;
 
 	private void Awake()
 	{
+		levelConditions = FindObjectOfType<LevelConditions>();
+
 		if (Instance != null && Instance != this)
 		{
 			// Si ya existe una instancia y no es esta, destruye esta copia.
@@ -64,10 +67,16 @@ public class PlayerController : MonoBehaviour
 		// DontDestroyOnLoad(gameObject);
 	}
 
-
+	public void SetStop(bool i)
+	{
+		stop = i;
+	}
 
 	void Update()
 	{
+		if (ManagerPlayer.Instance.pause)
+			return;
+
 		SetGrounded();
 
 
@@ -78,7 +87,6 @@ public class PlayerController : MonoBehaviour
 			gravityVel += gravityForce * Time.deltaTime;
 
 			this.transform.parent.position += new Vector3(0, gravityVel * Time.deltaTime, 0);
-
 		}
 		else
 		{
@@ -451,10 +459,26 @@ public class PlayerController : MonoBehaviour
 				}
 			}
 
+			switch (levelConditions.conditions)
+			{
+				case LevelConditions.Conditions.BUTTONS:
+
+					break;
+				case LevelConditions.Conditions.PAINT:
+					for (int i = 0; i < pieces.Count; i++)
+					{
+						pieces[i].Paint();
+					}
+					break;
+			}
+
 			ManagerPlayer.Instance.CheckEnd();
 
 			if (moved)
 				ManagerPlayer.Instance.actualMovements++;
+
+
+
 
 			moved = false;
 
@@ -498,6 +522,14 @@ public class PlayerController : MonoBehaviour
 		if(!isGrounded && ground)
 		{
 			isGrounded = ground;
+			RaycastHit hitInfo;
+
+
+			if (Physics.Raycast(this.transform.position, Vector3.down, out hitInfo, 0.7f, ~3, QueryTriggerInteraction.Ignore))
+			{
+				this.transform.position = new Vector3(this.transform.position.x, hitInfo.point.y+0.51f, this.transform.position.z);
+			}
+			gravityVel = 0;
 
 			ResetCanMove();
 		}

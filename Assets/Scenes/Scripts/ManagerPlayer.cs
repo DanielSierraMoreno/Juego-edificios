@@ -20,7 +20,15 @@ public class ManagerPlayer : MonoBehaviour
 
 	public List<CheckNewModules> pieces;
 
-    public bool checkEnd = false;
+	[Header("-------------------------------PAINT NUMBER CONDITION-------------------------------")]
+
+	public int toPaint = 0;
+
+	public int currentPaint = 0;
+
+
+
+	public bool checkEnd = false, pause = false;
 
 	public UnityEvent evento;
 
@@ -34,11 +42,16 @@ public class ManagerPlayer : MonoBehaviour
 
 
 
+
+
+
 	public TMP_Text levelGlobalTimer, levelGlobbalMovements, levelTimerResult, levelMovementsResult, levelTimerGoal, levelMovementsGoal, levelName;
 	public static ManagerPlayer Instance { get; private set; }
 
+	LevelConditions levelConditions;
 	private void Awake()
 	{
+		levelConditions = FindObjectOfType<LevelConditions>();
 		if (Instance != null && Instance != this)
 		{
 			// Si ya existe una instancia y no es esta, destruye esta copia.
@@ -62,17 +75,17 @@ public class ManagerPlayer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-		if (!checkEnd)
+		if (!checkEnd && !pause)
 		{
 			levelTimer += Time.deltaTime;
 		}
 
 		levelName.text = SceneManager.GetActiveScene().name;
-		levelTimerGoal.text = TimerGoal.ToString() + ",00s";
+		levelTimerGoal.text = TimerGoal.ToString() + ",00 s";
 		levelMovementsGoal.text = MovementsGoal.ToString();
 		levelGlobalTimer.text = Math.Clamp(levelTimer, 0, 999).ToString("F2");
 		levelGlobbalMovements.text = actualMovements.ToString();
-		levelTimerResult.text = Math.Clamp(levelTimer, 0, 999).ToString("F2") + "s";
+		levelTimerResult.text = Math.Clamp(levelTimer, 0, 999).ToString("F2") + " s";
 		levelMovementsResult.text = actualMovements.ToString();
 
 
@@ -100,24 +113,53 @@ public class ManagerPlayer : MonoBehaviour
     {
 		if (!checkEnd)
 		{
-			int count = 0;
-
-			for (int i = 0; i < pieces.Count; i++)
+			switch(levelConditions.conditions)
 			{
-				if (pieces[i].pieces.Count != 0)
-				{
-					count++;
-				}
+				case LevelConditions.Conditions.BUTTONS:
+
+					int count = 0;
+
+					for (int i = 0; i < pieces.Count; i++)
+					{
+						if (pieces[i].pieces.Count != 0)
+						{
+							count++;
+						}
+					}
+
+
+					if (count == pieces.Count)
+					{
+						checkEnd = true;
+						evento.Invoke();
+						PlayerController.Instance.enabled = false;
+					}
+
+
+					break;
+				case LevelConditions.Conditions.PAINT:
+
+					if(currentPaint >= toPaint)
+					{
+						checkEnd = true;
+						evento.Invoke();
+						PlayerController.Instance.enabled = false;
+					}
+					break;
 			}
 
 
-			if (count == pieces.Count)
-			{
-				checkEnd = true;
-				evento.Invoke();
-				PlayerController.Instance.enabled = false;
-			}
+
+
+
+
+
+
 		}
+	}
+	public void SetPause(bool i)
+	{
+		pause = i;
 	}
     public void NextLevel()
     {

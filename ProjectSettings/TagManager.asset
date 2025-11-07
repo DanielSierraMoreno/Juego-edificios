@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Die
   - IgnorarArrastre
+  - Paint
   layers:
   - Default
   - TransparentFX

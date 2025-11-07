@@ -10697,30 +10697,30 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 0
+      - m_Target: {fileID: 3926028150782809118}
+        m_TargetAssemblyTypeName: MoreMountains.Feedbacks.MMF_Player, MoreMountains.Tools
+        m_MethodName: PlayFeedbacks
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
-        m_CallState: 0
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 0
+        m_CallState: 2
+      - m_Target: {fileID: 8216437905675869034}
+        m_TargetAssemblyTypeName: MoreMountains.Feedbacks.MMF_Player, MoreMountains.Tools
+        m_MethodName: PlayFeedbacks
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
-        m_CallState: 0
+        m_CallState: 2
   hideEvent:
     m_PersistentCalls:
       m_Calls:
@@ -10736,30 +10736,30 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 0
+      - m_Target: {fileID: 4931023055433324062}
+        m_TargetAssemblyTypeName: MoreMountains.Feedbacks.MMF_Player, MoreMountains.Tools
+        m_MethodName: PlayFeedbacks
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
-        m_CallState: 0
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 0
+        m_CallState: 2
+      - m_Target: {fileID: 5526553974203033823}
+        m_TargetAssemblyTypeName: MoreMountains.Feedbacks.MMF_Player, MoreMountains.Tools
+        m_MethodName: PlayFeedbacks
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
-        m_CallState: 0
+        m_CallState: 2
   cargas: {fileID: 0}
 --- !u!1 &3102564821830040817
 GameObject:
@@ -16200,7 +16200,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 111
+  m_text: 1,00
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4f6bbae974298864f980df0107fc3fff, type: 2}
   m_sharedMaterial: {fileID: -8783343601416783904, guid: 4f6bbae974298864f980df0107fc3fff, type: 2}
@@ -16227,14 +16227,14 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
+  m_fontSize: 16
   m_fontSizeBase: 15
   m_fontWeight: 400
   m_enableAutoSizing: 1
   m_fontSizeMin: 10
-  m_fontSizeMax: 18
+  m_fontSizeMax: 16
   m_fontStyle: 1
-  m_HorizontalAlignment: 2
+  m_HorizontalAlignment: 4
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -16832,6 +16832,18 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 7798359999269652847}
+        m_TargetAssemblyTypeName: ManagerPlayer, Assembly-CSharp
+        m_MethodName: SetPause
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
         m_CallState: 2
 --- !u!114 &2267623715126688612
 MonoBehaviour:
@@ -19013,6 +19025,7 @@ Transform:
   - {fileID: 7961554027074839391}
   - {fileID: 1178423322451244177}
   - {fileID: 3542550499339661158}
+  - {fileID: 4956539444526310251}
   - {fileID: 2978311321984225965}
   - {fileID: 6389107761447545854}
   - {fileID: 6696260489745747506}
@@ -19034,7 +19047,10 @@ MonoBehaviour:
   TimerGoal: 15
   MovementsGoal: 10
   pieces: []
+  toPaint: 0
+  currentPaint: 0
   checkEnd: 0
+  pause: 0
   evento:
     m_PersistentCalls:
       m_Calls:
@@ -21336,6 +21352,7 @@ MonoBehaviour:
         m_Calls: []
   DebugActive: 0
   FeedbacksList:
+  - rid: 1849114827437899906
   - rid: 3483169921834156123
   - rid: 3483169787462811772
   - rid: 3483169829505204312
@@ -21353,6 +21370,88 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
+    - rid: 1849114827437899906
+      type: {class: MMF_Pause, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
+      data:
+        Active: 1
+        UniqueID: -1396783244
+        Label: Pause
+        ChannelMode: 0
+        Channel: 0
+        MMChannelDefinition: {fileID: 0}
+        Chance: 100
+        DisplayColor: {r: 0, g: 0, b: 0, a: 1}
+        Timing:
+          TimescaleMode: 0
+          ExcludeFromHoldingPauses: 0
+          ContributeToTotalDuration: 1
+          InitialDelay: 0
+          CooldownDuration: 0
+          InterruptsOnStop: 1
+          NumberOfRepeats: 0
+          RepeatForever: 0
+          DelayBetweenRepeats: 1
+          PlayCount: 0
+          LimitPlayCount: 0
+          MaxPlayCount: 3
+          SetPlayCountToZeroOnReset: 0
+          MMFeedbacksDirectionCondition: 0
+          PlayDirection: 0
+          ConstantIntensity: 0
+          UseIntensityInterval: 0
+          IntensityIntervalMin: 0
+          IntensityIntervalMax: 0
+          Sequence: {fileID: 0}
+          TrackID: 0
+          Quantized: 0
+          TargetBPM: 120
+        AutomatedTargetAcquisition:
+          Mode: 0
+          ChildIndex: 0
+        RandomizeOutput: 0
+        RandomMultiplier: {x: 0.8, y: 1}
+        RandomizeDuration: 0
+        RandomDurationMultiplier: {x: 0.5, y: 2}
+        UseRange: 0
+        RangeDistance: 5
+        UseRangeFalloff: 0
+        RangeFalloff:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 0
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        RemapRangeFalloff: {x: 0, y: 1}
+        AutomaticShakerSetupButton:
+          ButtonText: 
+        Owner: {fileID: 5812236972637594018}
+        DebugActive: 0
+        PauseDuration: 0.25
+        RandomizePauseDuration: 0
+        MinPauseDuration: 1
+        MaxPauseDuration: 3
+        RandomizeOnEachPlay: 1
+        ScriptDriven: 0
+        AutoResume: 0
+        AutoResumeAfter: 0.25
     - rid: 3483169787462811772
       type: {class: MMF_Position, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
@@ -25703,6 +25802,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 0
+      - m_Target: {fileID: 7798359999269652847}
+        m_TargetAssemblyTypeName: ManagerPlayer, Assembly-CSharp
+        m_MethodName: SetPause
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &7276284880449583642
 GameObject:
   m_ObjectHideFlags: 0
@@ -26958,8 +27069,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.39999458, y: -0.30000377}
-  m_SizeDelta: {x: 30.3383, y: 14.2664}
+  m_AnchoredPosition: {x: 1.8319, y: -0.30000377}
+  m_SizeDelta: {x: 27.4744, y: 14.2664}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7641181010477437718
 CanvasRenderer:
@@ -26989,7 +27100,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 151.10s
+  m_text: 151.10 s
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4f6bbae974298864f980df0107fc3fff, type: 2}
   m_sharedMaterial: {fileID: -8783343601416783904, guid: 4f6bbae974298864f980df0107fc3fff, type: 2}
@@ -34757,30 +34868,30 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 0
+      - m_Target: {fileID: 3926028150782809118}
+        m_TargetAssemblyTypeName: MoreMountains.Feedbacks.MMF_Player, MoreMountains.Tools
+        m_MethodName: PlayFeedbacks
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
-        m_CallState: 0
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 0
+        m_CallState: 2
+      - m_Target: {fileID: 8216437905675869034}
+        m_TargetAssemblyTypeName: MoreMountains.Feedbacks.MMF_Player, MoreMountains.Tools
+        m_MethodName: PlayFeedbacks
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
-        m_CallState: 0
+        m_CallState: 2
   hideEvent:
     m_PersistentCalls:
       m_Calls:
@@ -34796,30 +34907,30 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 0
+      - m_Target: {fileID: 5526553974203033823}
+        m_TargetAssemblyTypeName: MoreMountains.Feedbacks.MMF_Player, MoreMountains.Tools
+        m_MethodName: PlayFeedbacks
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
-        m_CallState: 0
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 0
+        m_CallState: 2
+      - m_Target: {fileID: 4931023055433324062}
+        m_TargetAssemblyTypeName: MoreMountains.Feedbacks.MMF_Player, MoreMountains.Tools
+        m_MethodName: PlayFeedbacks
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
-        m_CallState: 0
+        m_CallState: 2
   cargas: {fileID: 5122075439122210171}
 --- !u!1001 &318530539545570962
 PrefabInstance:
@@ -35016,6 +35127,124 @@ MonoBehaviour:
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6957746711064508991, guid: f83f39204d7522b43a430f2cf2493fac, type: 3}
   m_PrefabInstance: {fileID: 318530539545570962}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &2801259777073578233
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 4217856402004532351}
+    m_Modifications:
+    - target: {fileID: 139811178472223359, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: paintInstance
+      value: 
+      objectReference: {fileID: 2260011265687935492, guid: 5d4a1c9379a0c4040b1b3c1aac12f31a, type: 3}
+    - target: {fileID: 6321867625451400258, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 7798359999269652847}
+    - target: {fileID: 6321867625451400258, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: SetPause
+      objectReference: {fileID: 0}
+    - target: {fileID: 6325872518484289229, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_Name
+      value: Canvas (8)
+      objectReference: {fileID: 0}
+    - target: {fileID: 6325872518484289229, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+--- !u!224 &4956539444526310251 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 7073247026283832210, guid: 4855cf1557d85e84dbf12aef457ef92a, type: 3}
+  m_PrefabInstance: {fileID: 2801259777073578233}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5353784728417109201
 PrefabInstance:
@@ -35531,51 +35760,51 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8010224783767431021, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8010224783767431021, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Mode
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8010224783767431021, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 4931023055433324062}
     - target: {fileID: 8010224783767431021, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Target
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 5526553974203033823}
     - target: {fileID: 8010224783767431021, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8010224783767431021, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_CallState
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8010224783767431021, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
-      value: 
+      value: PlayFeedbacks
       objectReference: {fileID: 0}
     - target: {fileID: 8010224783767431021, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_MethodName
-      value: 
+      value: PlayFeedbacks
       objectReference: {fileID: 0}
     - target: {fileID: 8010224783767431021, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
-      value: 
+      value: MoreMountains.Feedbacks.MMF_Player, MoreMountains.Tools
       objectReference: {fileID: 0}
     - target: {fileID: 8010224783767431021, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_TargetAssemblyTypeName
-      value: 
+      value: MoreMountains.Feedbacks.MMF_Player, MoreMountains.Tools
       objectReference: {fileID: 0}
     - target: {fileID: 8010224783767431021, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: 
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 8010224783767431021, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: 
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 8905319161666721781, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_Name
@@ -35591,51 +35820,51 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9179842257258197070, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9179842257258197070, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Mode
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9179842257258197070, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 5526553974203033823}
     - target: {fileID: 9179842257258197070, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Target
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 4931023055433324062}
     - target: {fileID: 9179842257258197070, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 9179842257258197070, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_CallState
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 9179842257258197070, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
-      value: 
+      value: PlayFeedbacks
       objectReference: {fileID: 0}
     - target: {fileID: 9179842257258197070, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_MethodName
-      value: 
+      value: PlayFeedbacks
       objectReference: {fileID: 0}
     - target: {fileID: 9179842257258197070, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
-      value: 
+      value: MoreMountains.Feedbacks.MMF_Player, MoreMountains.Tools
       objectReference: {fileID: 0}
     - target: {fileID: 9179842257258197070, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_TargetAssemblyTypeName
-      value: 
+      value: MoreMountains.Feedbacks.MMF_Player, MoreMountains.Tools
       objectReference: {fileID: 0}
     - target: {fileID: 9179842257258197070, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: 
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 9179842257258197070, guid: 0846ee0f99cebb1419bb33faf8ad5544, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: 
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
