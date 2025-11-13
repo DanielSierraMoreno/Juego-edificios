@@ -7,8 +7,27 @@ using System.Linq;
 using UnityEngine.UIElements;
 using UnityEngine.Events;
 using Unity.Cinemachine;
+using MoreMountains.Feedbacks;
+using Unity.VisualScripting;
 public class PlayerController : MonoBehaviour
 {// Variables de configuración
+
+	[System.Serializable]
+	public struct savedMove
+	{
+		public float fallDistance;
+		public Vector3 pivotPos;
+		public Vector3 movement;
+		public Vector3 rotation;
+		public List<ModularPlayerPiece> added;
+		public List<GameObject> painted;
+	}
+	[SerializeField]
+	public List<savedMove> historialMovimientos;
+
+	[SerializeField]
+	public savedMove currentSavedMove;
+
 
 	[Header("Configuración del Arrastre")]
 	// Offset mínimo de distancia en píxeles.
@@ -41,7 +60,7 @@ public class PlayerController : MonoBehaviour
 	float timeSaved = 0;
 
 	float lastMoveTime = 0;
-	bool moved = false;
+	bool moved = true;
 	UnityEvent aa;
 
 	public CinemachineCamera cam;
@@ -51,8 +70,11 @@ public class PlayerController : MonoBehaviour
 	public static PlayerController Instance { get; private set; }
 	LevelConditions levelConditions;
 
+	public bool ResetMove = false;
+
 	private void Awake()
 	{
+		historialMovimientos = new List<savedMove>();
 		levelConditions = FindObjectOfType<LevelConditions>();
 
 		if (Instance != null && Instance != this)
@@ -74,6 +96,9 @@ public class PlayerController : MonoBehaviour
 
 	void Update()
 	{
+		if (ResetMove)
+			return;
+
 		if (ManagerPlayer.Instance.pause)
 			return;
 
@@ -87,6 +112,10 @@ public class PlayerController : MonoBehaviour
 			gravityVel += gravityForce * Time.deltaTime;
 
 			this.transform.parent.position += new Vector3(0, gravityVel * Time.deltaTime, 0);
+
+			if (lastMoveTime != 0)
+				currentSavedMove.fallDistance += gravityVel * Time.deltaTime;
+
 		}
 		else
 		{
@@ -120,9 +149,12 @@ public class PlayerController : MonoBehaviour
 				CancelInvoke("ResetCanMove");
 				lastMoveTime = Time.time;
 
+				currentSavedMove.rotation = Vector3.zero;
 				CanMove = false;
 				currentMoveTween.Kill();
 				currentMoveTween = this.transform.DOMove(currentPosition, (Time.time - timeSaved));
+				currentSavedMove.movement = Vector3.zero;
+				currentSavedMove.pivotPos = Vector3.zero;
 
 				currentRotateTween.Kill();
 
@@ -141,10 +173,13 @@ public class PlayerController : MonoBehaviour
 			}
 			return;
 		}
-		if (direction != Direction.NONE)
+
+		if (direction != Direction.NONE && CanMove && (Time.time - lastMoveTime) > 0.25f)
 		{
-			ApplySavedMove();
+			Invoke("ApplySavedMove", 0.0f);
+
 		}
+
 		// 1. INICIO de Clic (o toque)
 		if (Input.GetMouseButtonDown(0))
 		{
@@ -155,7 +190,7 @@ public class PlayerController : MonoBehaviour
 
 		// 2. MANTENIMIENTO del Clic (Detección continua)
 		// Solo verificamos si estamos arrastrando y si NO hemos detectado el arrastre todavía.
-		if (isDragging && !swipeDetected && (Time.time -lastMoveTime) > 0.25f)
+		if (isDragging && !swipeDetected && (Time.time -lastMoveTime) > 0.25f && CanMove && !moved)
 		{
 			Vector2 currentPosition = Input.mousePosition;
 
@@ -231,6 +266,7 @@ public class PlayerController : MonoBehaviour
 						}
 
 					}
+					Debug.Log("Move" + Time.time);
 
 					lastMoveTime = Time.time;
 					moved = true;
@@ -246,7 +282,8 @@ public class PlayerController : MonoBehaviour
 					currentRotateTween = this.transform.DORotate(deltaRotation, duration, RotateMode.WorldAxisAdd); // ¡La clave para la rotación incremental!
 					CanMove = false;
 					Invoke("ResetCanMove", 0.55f);
-
+					currentSavedMove.movement = transform.position;
+					currentSavedMove.rotation = -deltaRotation;
 
 
 				}
@@ -263,7 +300,6 @@ public class PlayerController : MonoBehaviour
 		{
 			isDragging = false;
 		}
-
 
 
 
@@ -360,6 +396,10 @@ public class PlayerController : MonoBehaviour
 	
 	void ApplySavedMove()
 	{
+        if (!CanMove)
+			return;
+		Debug.Log("Saved Move" + Time.time);
+
 		Vector3 targetPosition = Vector3.zero, deltaRotation = Vector3.zero;
 
 			if (this.direction == Direction.LEFTUP) // Arriba Izquierda
@@ -421,15 +461,20 @@ public class PlayerController : MonoBehaviour
 		currentRotateTween = this.transform.DORotate(deltaRotation, 0.5f, RotateMode.WorldAxisAdd); // ¡La clave para la rotación incremental!
 		CanMove = false;
 		Invoke("ResetCanMove", 0.55f);
-
+		currentSavedMove.movement = transform.position;
+		currentSavedMove.rotation = -deltaRotation;
 		this.direction = Direction.NONE;
+	}
+	void move()
+	{
+		CanMove = true;
+
 	}
 	void ResetCanMove()
 	{
 		if(!error && isGrounded)
 		{
 			CanMove = true;
-
 
 			for (int i = 0; i < pieces.Count; i++)
 			{
@@ -442,10 +487,21 @@ public class PlayerController : MonoBehaviour
 							pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().pieces[j].transform.position = new Vector3(pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().pieces[j].transform.position.x, pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().transform.position.y, pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().pieces[j].transform.position.z);
 
 							pieces.Add(pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().pieces[j].GetComponentInParent<ModularPlayerPiece>());
+
+							if(currentSavedMove.added == null)
+								currentSavedMove.added = new List<ModularPlayerPiece>();
+
+							currentSavedMove.added.Add(pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().pieces[j].GetComponentInParent<ModularPlayerPiece>());
+
+							if (levelConditions.conditions == LevelConditions.Conditions.CONNECT)
+							{
+								ManagerPlayer.Instance.connect++;
+							}
+
+
 						}
 					}
 				}
-
 			}
 
 			for (int i = 0; i < pieces.Count; i++)
@@ -471,10 +527,37 @@ public class PlayerController : MonoBehaviour
 					}
 					break;
 			}
+			currentSavedMove.pivotPos = this.transform.position;
+
+			currentSavedMove.movement.x = Mathf.Round(currentSavedMove.movement.x);
+			currentSavedMove.movement.y = Mathf.Round(currentSavedMove.movement.y);
+			currentSavedMove.movement.z = Mathf.Round(currentSavedMove.movement.z);
+
+			// Redondeando los valores de currentSavedMove.pivotPos
+			currentSavedMove.pivotPos.x = Mathf.Round(currentSavedMove.pivotPos.x);
+			currentSavedMove.pivotPos.y = Mathf.Round(currentSavedMove.pivotPos.y);
+			currentSavedMove.pivotPos.z = Mathf.Round(currentSavedMove.pivotPos.z);
+
+
+
+			if (currentSavedMove.fallDistance > -1f && currentSavedMove.fallDistance < -0f)
+				currentSavedMove.fallDistance = 0f;
+
+			if (currentSavedMove.movement != Vector3.zero)
+			{
+				historialMovimientos.Add(currentSavedMove);
+
+				Debug.Log("Saved Historial" + Time.time);
+
+			}
+
+
+
+				currentSavedMove = new savedMove();
 
 			ManagerPlayer.Instance.CheckEnd();
 
-			if (moved)
+			if (moved && lastMoveTime != 0)
 				ManagerPlayer.Instance.actualMovements++;
 
 
@@ -530,9 +613,15 @@ public class PlayerController : MonoBehaviour
 				this.transform.position = new Vector3(this.transform.position.x, hitInfo.point.y+0.51f, this.transform.position.z);
 			}
 			gravityVel = 0;
-
-			ResetCanMove();
 		}
+		
+		if ((isGrounded&& (Time.time - lastMoveTime) > 0.625f && !CanMove && moved) || (lastMoveTime == 0 && isGrounded))
+		{
+			ResetCanMove();
+
+		}
+
+
 		if (isGrounded && !ground)
 		{
 			CanMove = false;
@@ -606,6 +695,7 @@ public class PlayerController : MonoBehaviour
 			{
 				pieces[i].transform.parent = this.transform.parent;
 			}
+			this.transform.eulerAngles = Vector3.zero;
 
 			this.transform.position = finalPiece.transform.position;
 
@@ -616,5 +706,108 @@ public class PlayerController : MonoBehaviour
 			return true;
 		}
 		return false;
+	}
+
+	public void ResetingMove()
+	{
+		isDragging = false;
+		ResetMove = true;
+		savedMove savedMove = historialMovimientos[historialMovimientos.Count - 1];
+		historialMovimientos.RemoveAt(historialMovimientos.Count - 1); 
+		ManagerPlayer.Instance.actualMovements--;
+
+		for (int i = 0; i < pieces.Count; i++)
+		{
+			pieces[i].transform.parent = this.transform.parent;
+		}
+		this.transform.eulerAngles = Vector3.zero;
+		this.transform.position = savedMove.pivotPos;
+
+		for (int i = 0; i < pieces.Count; i++)
+		{
+			pieces[i].transform.parent = this.transform;
+		}
+
+		if (savedMove.painted != null)
+		{
+			foreach (GameObject go in savedMove.painted)
+			{
+				// Esta es la VERIFICACIÓN CRUCIAL.
+				// Si 'go' es null (la referencia se perdió o el objeto fue destruido), 
+				// el código simplemente salta el cuerpo del if.
+				if (go != null)
+				{
+					UnityEngine.Object.Destroy(go);
+					ManagerPlayer.Instance.currentPaint--;
+
+				}
+			}
+
+			// Esto es seguro y limpia las referencias null
+			savedMove.painted.Clear();
+		}
+
+		if(savedMove.added != null)
+		{
+			GameObject objetoEncontrado = GameObject.Find("ENVIRONMENT PIECES");
+
+			if (objetoEncontrado != null)
+			{
+
+				Transform nuevoParent = objetoEncontrado.transform;
+
+				// 3. Iterar sobre todos los elementos añadidos y cambiar su parent
+				foreach (ModularPlayerPiece go in savedMove.added)
+				{
+					// Verificación de seguridad, por si el objeto fue destruido
+					if (go != null)
+					{
+						pieces.Remove(go);
+						// CAMBIAR EL PARENT
+						go.transform.SetParent(nuevoParent);
+						go.transform.GetChild(0).GetComponent<MMF_Player>().PlayFeedbacks();
+						ManagerPlayer.Instance.connect--;
+					}
+				}
+
+
+			}
+			savedMove.added.Clear();
+		}
+
+		if(savedMove.fallDistance < 0)
+		{
+			Vector3 targetPosition = this.transform.position - new Vector3(0, savedMove.fallDistance+1, 0);
+
+			currentMoveTween = this.transform.DOMove(targetPosition, -savedMove.fallDistance*0.25f);
+			StartCoroutine(Reset(savedMove, -savedMove.fallDistance * 0.25f));
+		}
+		else
+		{
+			StartCoroutine(Reset(savedMove, 0));
+
+		}
+
+
+	}
+
+	IEnumerator Reset(savedMove savedMove, float time)
+	{
+		yield return new WaitForSeconds(time);
+
+		currentMoveTween.Kill();
+		// 1. Mueve el objeto a la nueva posición
+		currentMoveTween = this.transform.DOMove(savedMove.movement, 0.5f);
+
+		currentRotateTween.Kill();
+
+		currentRotateTween = this.transform.DORotate(savedMove.rotation, 0.5f, RotateMode.WorldAxisAdd);
+
+
+
+		yield return new WaitForSeconds(0.55f);
+
+		ResetMove = false;
+		CanMove = true;
 	}
 }

@@ -39,7 +39,8 @@ public class Configuracion : MonoBehaviour
 			DontDestroyOnLoad(this.gameObject);
 
 			CargarAjustes();
-			CargarVolumenes();
+			Invoke("CargarVolumenes", 0.0025f);
+
 		}
 	}
 

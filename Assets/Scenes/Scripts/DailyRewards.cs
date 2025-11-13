@@ -167,6 +167,7 @@ public class DailyRewards : MonoBehaviour
 	{
 		int batteryCharges = PlayerPrefs.GetInt("CargasBateria", 0);
 		batteryCharges += amount;
+		PlayerPrefs.SetInt("Undo", PlayerPrefs.GetInt("Undo", 0) + amount);
 
 		// 2. Guardar las nuevas cargas
 		PlayerPrefs.SetInt("CargasBateria", batteryCharges);

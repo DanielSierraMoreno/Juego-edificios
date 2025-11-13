@@ -57,6 +57,9 @@ public class Calendario : MonoBehaviour
 		// Suscribirse y solicitar la hora al iniciar la escena
 		timeManager.OnTimeReceived += SetServerDate;
 		timeManager.GetCurrentUTCTime();
+		currentStreak = PlayerPrefs.GetInt(RACHA_KEY, 1);
+
+		UpdateStreakDisplay();
 	}
 	void Awake()
 	{
@@ -170,12 +173,14 @@ public class Calendario : MonoBehaviour
 			// Ocultar y mostrar estrellas
 			for (int k = 0; k < 3; k++)
 			{
-				days[i].transform.GetChild(3).GetChild(k).gameObject.SetActive(false);
+				days[i].transform.GetChild(3).GetChild(k).gameObject?.SetActive(false);
 			}
 
 			for (int j = 0; j < (int)(progres / 3); j++)
 			{
-				days[i].transform.GetChild(3).GetChild(j).gameObject.SetActive(true);
+				if (j >= 3)
+					continue;
+				days[i].transform.GetChild(3).GetChild(j).gameObject?.SetActive(true);
 			}
 
 			currentMonthDay++;
@@ -198,6 +203,9 @@ public class Calendario : MonoBehaviour
 
 		for (int j = 0; j < (int)(progressHoy / 3); j++)
 		{
+			if(j >= 3)
+				continue;
+
 			this.stars[j].color = Color.white;
 		}
 
@@ -283,7 +291,6 @@ public class Calendario : MonoBehaviour
 		PlayerPrefs.SetString(ULTIMA_FECHA_RACHA_KEY, todayString);
 		PlayerPrefs.Save();
 
-		UpdateStreakDisplay();
 	}
 
 
@@ -331,6 +338,7 @@ public class Calendario : MonoBehaviour
 			// 1. Sumar la racha actual a las cargas de batería
 			batteryCharges = PlayerPrefs.GetInt(CARGAS_BATERIA_KEY, 0);
 			batteryCharges += currentStreak;
+			PlayerPrefs.SetInt("Undo", PlayerPrefs.GetInt("Undo", 0) + currentStreak);
 
 			// 2. Guardar las nuevas cargas
 			PlayerPrefs.SetInt(CARGAS_BATERIA_KEY, batteryCharges);

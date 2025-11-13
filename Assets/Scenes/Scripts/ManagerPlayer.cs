@@ -22,13 +22,25 @@ public class ManagerPlayer : MonoBehaviour
 
 	[Header("-------------------------------PAINT NUMBER CONDITION-------------------------------")]
 
+
+
+	//-------------------PAINT-------------------------
 	public int toPaint = 0;
 
 	public int currentPaint = 0;
 
+	[Header("-------------------------------CONNECT NUMBER CONDITION-------------------------------")]
 
+	//---------------CONNECT------------------------
 
-	public bool checkEnd = false, pause = false;
+	public int connect = 0;
+
+	public int connectGoal = 5;
+
+	[Header("-------------------------------OTHERS-------------------------------")]
+
+	public bool checkEnd = false;
+	public bool pause = false;
 
 	public UnityEvent evento;
 
@@ -49,6 +61,10 @@ public class ManagerPlayer : MonoBehaviour
 	public static ManagerPlayer Instance { get; private set; }
 
 	LevelConditions levelConditions;
+
+	public TMP_Text undoMove;
+
+	public UnityEvent undoEmpty;
 	private void Awake()
 	{
 		levelConditions = FindObjectOfType<LevelConditions>();
@@ -75,6 +91,9 @@ public class ManagerPlayer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+		if(undoMove != null)
+			undoMove.text = PlayerPrefs.GetInt("Undo", 0).ToString();
+
 		if (!checkEnd && !pause)
 		{
 			levelTimer += Time.deltaTime;
@@ -146,6 +165,16 @@ public class ManagerPlayer : MonoBehaviour
 						PlayerController.Instance.enabled = false;
 					}
 					break;
+				case LevelConditions.Conditions.CONNECT:
+
+					if (connect >= connectGoal)
+					{
+						checkEnd = true;
+						evento.Invoke();
+						PlayerController.Instance.enabled = false;
+					}
+					break;
+
 			}
 
 
@@ -237,8 +266,14 @@ public class ManagerPlayer : MonoBehaviour
 		FindObjectOfType<LoadingUI>().LoadScene("LevelSelector");
 	}
 
-	public void Dead()
+	public void Dead(Collider other)
 	{
+		if(PlayerController.Instance.isGrounded)
+		{
+			return;
+		}
+		other.enabled = false;
+
 		checkEnd = true;
 		eventoMuerte.Invoke();
 
@@ -250,6 +285,26 @@ public class ManagerPlayer : MonoBehaviour
 		PlayerController.Instance.cam.Target.TrackingTarget = newEmptyGameObject.transform;
 
 		FindObjectOfType<AdsManager>().IncreaseAdCount(1);
+
+	}
+
+	public void ResetMovement()
+	{
+		if (checkEnd)
+			return;
+
+		if(PlayerPrefs.GetInt("Undo", 0) > 0)
+		{
+			if (!PlayerController.Instance.ResetMove && PlayerController.Instance.historialMovimientos.Count != 0 && PlayerController.Instance.CanMove)
+			{
+				PlayerController.Instance.ResetingMove();
+				PlayerPrefs.SetInt("Undo", PlayerPrefs.GetInt("Undo", 0) - 1);
+			}
+		}
+		else
+		{
+			undoEmpty.Invoke();
+		}
 
 	}
 }

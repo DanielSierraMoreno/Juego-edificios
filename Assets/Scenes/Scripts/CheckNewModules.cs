@@ -72,8 +72,7 @@ public class CheckNewModules : MonoBehaviour
 
 		if(other.gameObject.CompareTag("Die") && type == Type.PLAYER_MODULE)
 		{
-			ManagerPlayer.Instance.Dead();
-			other.enabled = false;
+			ManagerPlayer.Instance.Dead(other);
 
 		}
 
@@ -105,7 +104,11 @@ public class CheckNewModules : MonoBehaviour
 
 
 		}
+		if (other.gameObject.CompareTag("Die") && type == Type.PLAYER_MODULE)
+		{
+			ManagerPlayer.Instance.Dead(other);
 
+		}
 
 	}
 	private void OnTriggerExit(Collider other)

@@ -4,9 +4,9 @@ using UnityEngine.SceneManagement;
 
 public class LevelConditions : MonoBehaviour
 {
-    public enum Conditions { BUTTONS, PAINT};
+    public enum Conditions { BUTTONS, PAINT, CONNECT};
 
-    public TMP_Text timeGoal, moveGoal, objective, level;
+    public TMP_Text timeGoal, moveGoal, objective, objectiveTitle, level;
 
     public Conditions conditions;
 	public GameObject paintInstance;
@@ -25,10 +25,16 @@ public class LevelConditions : MonoBehaviour
         {
             case Conditions.BUTTONS:
                 objective.text = "Press one or more buttons exactly at the same time";
-
+				objectiveTitle.text = "Buttons";
 				break;
 			case Conditions.PAINT:
 				objective.text = "Pass over all available tiles to paint them";
+				objectiveTitle.text = "Paint";
+
+				break;
+			case Conditions.CONNECT:
+				objective.text = "Connect all available modules";
+				objectiveTitle.text = "Connect";
 
 				break;
 		}

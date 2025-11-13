@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -72,8 +73,11 @@ public class ModularPlayerPiece : MonoBehaviour
 			// 3. Ejecutar la acción si la distancia supera el límite.
 			if (distanceToClosest > 0.5f)
 			{
-				Instantiate(levelConditions.paintInstance, this.transform.position, Quaternion.identity);
+				if(PlayerController.Instance.currentSavedMove.painted == null)
+					PlayerController.Instance.currentSavedMove.painted = new List<GameObject>();
 
+				PlayerController.Instance.currentSavedMove.painted.Add(Instantiate(levelConditions.paintInstance, this.transform.position, Quaternion.identity));
+				
 				// Incrementa el contador solo si la instancia del ManagerPlayer existe
 				if (ManagerPlayer.Instance != null)
 				{
@@ -85,6 +89,66 @@ public class ModularPlayerPiece : MonoBehaviour
 	}
 	private void OnTriggerStay(Collider other)
 	{
+		if (other.gameObject.GetComponent<PusheableBox>() != null)
+		{
+			Vector3 localPosition = other.transform.InverseTransformPoint(this.transform.position);
+
+			// 2. Determinar la dirección de empuje (Local X vs Local Z)
+			Vector3 finalPushDirectionLocal = Vector3.zero;
+
+			// El tamaño de la caja se puede obtener aquí, pero usaremos el umbral fijo 
+			// de 0.95 basado en tu solicitud. Asumimos una unidad de tamaño base.
+			float threshold = 0.5f;
+
+			// Comparamos el valor absoluto para encontrar el eje dominante
+			if (Mathf.Abs(localPosition.x) > Mathf.Abs(localPosition.z))
+			{
+				// El Pusher está más alejado en el Eje X local (Lateral)
+
+				if (localPosition.x > threshold) // Empuje desde la izquierda de la caja (Eje X positivo)
+				{
+					// La dirección final es el Eje X local POSITIVO
+					finalPushDirectionLocal = Vector3.right;
+				}
+				else if (localPosition.x < -threshold) // Empuje desde la derecha de la caja (Eje X negativo)
+				{
+					// La dirección final es el Eje X local NEGATIVO
+					finalPushDirectionLocal = Vector3.left;
+				}
+			}
+			else
+			{
+				// El Pusher está más alejado en el Eje Z local (Frontal/Trasero)
+
+				if (localPosition.z > threshold) // Empuje desde atrás de la caja (Eje Z positivo)
+				{
+					// La dirección final es el Eje Z local POSITIVO
+					finalPushDirectionLocal = Vector3.forward;
+				}
+				else if (localPosition.z < -threshold) // Empuje desde adelante de la caja (Eje Z negativo)
+				{
+					// La dirección final es el Eje Z local NEGATIVO
+					finalPushDirectionLocal = Vector3.back;
+				}
+			}
+
+			// --- 3. Convertir la dirección local a dirección mundial y empujar ---
+
+			if (finalPushDirectionLocal != Vector3.zero)
+			{
+				// Transformar el vector de dirección (que es LOCAL: 1,0,0 o 0,0,1) al espacio MUNDIAL
+				// La dirección de empuje es el eje de la caja que queremos mover.
+				Vector3 finalPushDirectionWorld = other.transform.TransformDirection(finalPushDirectionLocal);
+
+				// Normalizar la dirección final (aunque ya lo estará)
+				finalPushDirectionWorld.Normalize();
+
+				if (other.gameObject.GetComponent<PusheableBox>().Push(-finalPushDirectionWorld))
+					return;
+			}
+
+		}
+
 		if (!other.isTrigger)
 		{
 			choque = true;

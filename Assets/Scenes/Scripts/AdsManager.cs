@@ -27,10 +27,23 @@ public class AdsManager : MonoBehaviour
 
 	public void ShowAdForEnergy()
 	{
+		int batteryCharges = PlayerPrefs.GetInt("CargasBateria", 0);
+		batteryCharges += 5;
 
+		// 2. Guardar las nuevas cargas
+		PlayerPrefs.SetInt("CargasBateria", batteryCharges);
 	}
 
-    public void IncreaseAdCount(int i)
+	public void ShowAdForUndo()
+	{
+		int UndoCharges = PlayerPrefs.GetInt("Undo", 0);
+		UndoCharges += 3;
+
+		// 2. Guardar las nuevas cargas
+		PlayerPrefs.SetInt("Undo", UndoCharges);
+	}
+
+	public void IncreaseAdCount(int i)
     {
 		if (PlayerPrefs.GetInt(NO_ADS, 0) == 1)
 			return;
@@ -67,6 +80,24 @@ public class AdsManager : MonoBehaviour
 
 		// 2. Guardar las nuevas cargas
 		PlayerPrefs.SetInt("CargasBateria", batteryCharges);
+	}
+
+	public void Buy50Undo()
+	{
+		int UndoCharges = PlayerPrefs.GetInt("Undo", 0);
+		UndoCharges += 50;
+
+		// 2. Guardar las nuevas cargas
+		PlayerPrefs.SetInt("Undo", UndoCharges);
+	}
+
+	public void Buy100Undo()
+	{
+		int UndoCharges = PlayerPrefs.GetInt("Undo", 0);
+		UndoCharges += 100;
+
+		// 2. Guardar las nuevas cargas
+		PlayerPrefs.SetInt("Undo", UndoCharges);
 	}
 
 	public void BuyNoAds()

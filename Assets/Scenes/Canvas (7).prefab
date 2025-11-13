@@ -1657,8 +1657,10 @@ MonoBehaviour:
   timeGoal: {fileID: 5389472603613936600}
   moveGoal: {fileID: 3433698240954168420}
   objective: {fileID: 8342188378567662770}
+  objectiveTitle: {fileID: 0}
   level: {fileID: 1629386169741510335}
   conditions: 0
+  paintInstance: {fileID: 6298840988814937926}
 --- !u!114 &1094292502126877718
 MonoBehaviour:
   m_ObjectHideFlags: 0
