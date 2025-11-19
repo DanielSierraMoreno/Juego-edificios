@@ -9,9 +9,18 @@ using UnityEngine.Events;
 using Unity.Cinemachine;
 using MoreMountains.Feedbacks;
 using Unity.VisualScripting;
+using UnityEngine.Rendering;
 public class PlayerController : MonoBehaviour
 {// Variables de configuración
+	[System.Serializable]
+	public struct PusheableBoxStruct
+	{
+		public PusheableBox box;
+		public Vector3 movement;
+		public Vector3 currentPos;
 
+	}
+	private int _pendingMMFPlayers = 0;
 	[System.Serializable]
 	public struct savedMove
 	{
@@ -19,8 +28,14 @@ public class PlayerController : MonoBehaviour
 		public Vector3 pivotPos;
 		public Vector3 movement;
 		public Vector3 rotation;
+		public Vector3 externalMove;
+		public float externalMoveTime;
+
 		public List<ModularPlayerPiece> added;
 		public List<GameObject> painted;
+		public List<UnityEvent> events;
+		public List<PusheableBoxStruct> pusheableBoxes;
+
 	}
 	[SerializeField]
 	public List<savedMove> historialMovimientos;
@@ -71,7 +86,7 @@ public class PlayerController : MonoBehaviour
 	LevelConditions levelConditions;
 
 	public bool ResetMove = false;
-
+	public bool externalMove = false;
 	private void Awake()
 	{
 		historialMovimientos = new List<savedMove>();
@@ -93,9 +108,20 @@ public class PlayerController : MonoBehaviour
 	{
 		stop = i;
 	}
+	Vector3 pos;
+	
+
+	public void SetExternalMove(bool i)
+	{
+		externalMove = i;
+
+	}
+
 
 	void Update()
 	{
+		
+
 		if (ResetMove)
 			return;
 
@@ -122,13 +148,36 @@ public class PlayerController : MonoBehaviour
 			RaycastHit hitInfo;
 
 
-			if (Physics.Raycast(this.transform.position, Vector3.down, out hitInfo, 0.7f, ~3, QueryTriggerInteraction.Ignore))
+			if (Physics.Raycast(this.transform.position, Vector3.down, out hitInfo, 0.75f, ~3, QueryTriggerInteraction.Ignore))
 			{
 				this.transform.position = new Vector3(this.transform.position.x, hitInfo.point.y + 0.5f, this.transform.position.z);
 			}
 
 				gravityVel = 0;
 		}
+
+		if (externalMove)
+		{
+
+			int lastIndex = historialMovimientos.Count - 1;
+			savedMove lastMove = historialMovimientos[lastIndex];
+
+			// 2. Modificar la Copia local (lastMove)
+			// La variable 'pos' debe estar definida en el contexto donde ejecutas esto.
+			lastMove.externalMove -= transform.position - pos;
+			lastMove.externalMoveTime += Time.deltaTime;
+
+			// O si quieres simplemente asignar un valor:
+			// lastMove.externalMove = transform.position - pos;
+
+			// 3. Reemplazar la estructura en el historial con la copia modificada
+			historialMovimientos[lastIndex] = lastMove; 
+			
+
+			pos = transform.position;
+			return;
+		}
+		pos = transform.position;
 
 		if (stop)
 			return;
@@ -148,7 +197,7 @@ public class PlayerController : MonoBehaviour
 			{
 				CancelInvoke("ResetCanMove");
 				lastMoveTime = Time.time;
-
+				currentSavedMove.fallDistance = 0;
 				currentSavedMove.rotation = Vector3.zero;
 				CanMove = false;
 				currentMoveTween.Kill();
@@ -470,6 +519,7 @@ public class PlayerController : MonoBehaviour
 		CanMove = true;
 
 	}
+
 	void ResetCanMove()
 	{
 		if(!error && isGrounded)
@@ -485,6 +535,7 @@ public class PlayerController : MonoBehaviour
 						if(!pieces.Contains(pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().pieces[j].GetComponentInParent<ModularPlayerPiece>()) && pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().pieces[j].type == CheckNewModules.Type.PLAYER_MODULE)
 						{
 							pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().pieces[j].transform.position = new Vector3(pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().pieces[j].transform.position.x, pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().transform.position.y, pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().pieces[j].transform.position.z);
+							pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().pieces[j].PlayEvent(true);
 
 							pieces.Add(pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().pieces[j].GetComponentInParent<ModularPlayerPiece>());
 
@@ -510,7 +561,8 @@ public class PlayerController : MonoBehaviour
 				{
 					for (int j = 0; j < pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().pieces.Count; j++)
 					{
-						pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().pieces[j].PlayEvent();
+						if(pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().pieces[j].GetComponentInParent<ModularPlayerPiece>() == null)
+							pieces[i].gameObject.GetComponentInChildren<CheckNewModules>().pieces[j].PlayEvent(false);
 					}
 				}
 			}
@@ -591,6 +643,11 @@ public class PlayerController : MonoBehaviour
 	}
 	// -----------------------------------------------------------------------------------
 
+	public bool IsModuleIncluded(ModularPlayerPiece piece)
+	{
+		return pieces.Contains(piece);
+	}
+
 	void SetGrounded()
 	{
 		bool ground = false;
@@ -621,10 +678,11 @@ public class PlayerController : MonoBehaviour
 
 		}
 
-
+		
 		if (isGrounded && !ground)
 		{
 			CanMove = false;
+
 		}
 
 		isGrounded = ground;
@@ -707,8 +765,17 @@ public class PlayerController : MonoBehaviour
 		}
 		return false;
 	}
+	public void OnMMFPlayerCompleted()
+	{
+		_pendingMMFPlayers--;
+		// Debug.Log($"MMFPlayer completado. Pendientes: {_pendingMMFPlayers}");
+	}
 
 	public void ResetingMove()
+	{
+		StartCoroutine("ResetingMoveCoroutine", 0);
+	}
+	public IEnumerator ResetingMoveCoroutine()
 	{
 		isDragging = false;
 		ResetMove = true;
@@ -716,17 +783,22 @@ public class PlayerController : MonoBehaviour
 		historialMovimientos.RemoveAt(historialMovimientos.Count - 1); 
 		ManagerPlayer.Instance.actualMovements--;
 
-		for (int i = 0; i < pieces.Count; i++)
+		if(savedMove.externalMove == Vector3.zero)
 		{
-			pieces[i].transform.parent = this.transform.parent;
-		}
-		this.transform.eulerAngles = Vector3.zero;
-		this.transform.position = savedMove.pivotPos;
+			for (int i = 0; i < pieces.Count; i++)
+			{
+				pieces[i].transform.parent = this.transform.parent;
+			}
+			this.transform.eulerAngles = Vector3.zero;
+			this.transform.position = savedMove.pivotPos;
 
-		for (int i = 0; i < pieces.Count; i++)
-		{
-			pieces[i].transform.parent = this.transform;
+			for (int i = 0; i < pieces.Count; i++)
+			{
+				pieces[i].transform.parent = this.transform;
+			}
 		}
+
+
 
 		if (savedMove.painted != null)
 		{
@@ -775,25 +847,101 @@ public class PlayerController : MonoBehaviour
 			savedMove.added.Clear();
 		}
 
-		if(savedMove.fallDistance < 0)
-		{
-			Vector3 targetPosition = this.transform.position - new Vector3(0, savedMove.fallDistance+1, 0);
+		// =======================================================================
+		// 4. LÓGICA DE EVENTOS (MMFPlayer) Y ESPERA INTEGRADA
+		// =======================================================================
 
-			currentMoveTween = this.transform.DOMove(targetPosition, -savedMove.fallDistance*0.25f);
-			StartCoroutine(Reset(savedMove, -savedMove.fallDistance * 0.25f));
+		if (savedMove.externalMove != Vector3.zero)
+		{
+
+			currentMoveTween = this.transform.DOMove(this.transform.position + savedMove.externalMove, savedMove.externalMoveTime+0.1f);
+
+		}
+
+
+		if (savedMove.events != null)
+		{
+			// [CAMBIO CLAVE 1]: Inicializar el contador
+			_pendingMMFPlayers = savedMove.events.Count;
+
+			foreach (UnityEvent eve in savedMove.events)
+			{
+				// Dispara el MMFPlayer. Al terminar, cada uno llama a OnMMFPlayerCompleted().
+				eve.Invoke();
+			}
+
+			// [CAMBIO CLAVE 2]: Esperar a que el contador sea cero.
+			// Si savedMove.events es null, esta sección se omite y el código continúa.
+			while (_pendingMMFPlayers > 0)
+			{
+				yield return null; // Espera un frame
+			}
+			// Debug.Log("Todos los MMFPlayers han terminado. Continuando con la animación.");
+		}
+
+
+		if (savedMove.pusheableBoxes != null)
+		{
+			foreach (PusheableBoxStruct box in savedMove.pusheableBoxes)
+			{
+				box.box.transform.DOMove(box.currentPos, 0.15f);
+			}
+
+		}
+
+
+
+		yield return new WaitForSeconds(0.1f);
+
+
+		if (savedMove.externalMove != Vector3.zero)
+		{
+			for (int i = 0; i < pieces.Count; i++)
+			{
+				pieces[i].transform.parent = this.transform.parent;
+			}
+			this.transform.eulerAngles = Vector3.zero;
+			this.transform.position = savedMove.pivotPos;
+
+			for (int i = 0; i < pieces.Count; i++)
+			{
+				pieces[i].transform.parent = this.transform;
+			}
+		}
+
+		yield return new WaitForSeconds(0.05f);
+		// =======================================================================
+		// 5. ANIMACIÓN DE MOVIMIENTO/CAÍDA (Se ejecuta después de la espera)
+		// =======================================================================
+
+		if (savedMove.fallDistance < 0)
+		{
+			// Lógica de salto (movimiento vertical inicial para deshacer la caída)
+			Vector3 targetPosition = this.transform.position - new Vector3(0, savedMove.fallDistance + 1, 0);
+			float fallDuration = -savedMove.fallDistance * 0.25f;
+
+			currentMoveTween = this.transform.DOMove(targetPosition, fallDuration);
+			StartCoroutine(Reset(savedMove, fallDuration));
 		}
 		else
 		{
+			// No hubo caída, simplemente iniciar el Reset (que maneja el movimiento horizontal/rotación)
 			StartCoroutine(Reset(savedMove, 0));
-
 		}
-
-
 	}
 
 	IEnumerator Reset(savedMove savedMove, float time)
 	{
 		yield return new WaitForSeconds(time);
+
+		if (savedMove.pusheableBoxes != null)
+		{
+			foreach (PusheableBoxStruct box in savedMove.pusheableBoxes)
+			{
+				box.box.transform.DOMove(box.movement, 0.5f);
+			}
+
+		}
 
 		currentMoveTween.Kill();
 		// 1. Mueve el objeto a la nueva posición

@@ -13,6 +13,8 @@ public class CheckNewModules : MonoBehaviour
 
 	[SerializeField]
 	private UnityEvent evento;
+	[SerializeField]
+	private UnityEvent eventoRevert;
 
 	public bool OnlyPlayOnce = true;
 
@@ -28,14 +30,26 @@ public class CheckNewModules : MonoBehaviour
     {
         
     }
-
-	public void PlayEvent()
+	public void Revert()
+	{
+		played = false;
+		PlayerController.Instance.OnMMFPlayerCompleted();
+	}
+	public void PlayEvent(bool notSafe)
 	{
 		if (OnlyPlayOnce)
 		{
 			if (!played)
 			{
 				evento.Invoke();
+
+				if(!notSafe)
+				{
+					if (PlayerController.Instance.currentSavedMove.events == null)
+						PlayerController.Instance.currentSavedMove.events = new List<UnityEvent>();
+					PlayerController.Instance.currentSavedMove.events.Add(eventoRevert);
+				}
+
 			}
 
 
@@ -45,6 +59,12 @@ public class CheckNewModules : MonoBehaviour
 		{
 			evento.Invoke();
 
+			if (!notSafe)
+			{
+				if (PlayerController.Instance.currentSavedMove.events == null)
+					PlayerController.Instance.currentSavedMove.events = new List<UnityEvent>();
+				PlayerController.Instance.currentSavedMove.events.Add(eventoRevert);
+			}
 		}
 	}
 
@@ -76,9 +96,15 @@ public class CheckNewModules : MonoBehaviour
 
 		}
 
+		if (other.gameObject.CompareTag("InstantDie") && type == Type.PLAYER_MODULE)
+		{
+			ManagerPlayer.Instance.InstantDead(other);
+
+		}
+
 		if (type == Type.BULLET)
 		{
-			PlayEvent();
+			PlayEvent(false);
 		}
 
 	}
@@ -110,6 +136,11 @@ public class CheckNewModules : MonoBehaviour
 
 		}
 
+		if (other.gameObject.CompareTag("InstantDie") && type == Type.PLAYER_MODULE)
+		{
+			ManagerPlayer.Instance.InstantDead(other);
+
+		}
 	}
 	private void OnTriggerExit(Collider other)
 	{
@@ -140,7 +171,7 @@ public class CheckNewModules : MonoBehaviour
 		switch (other.gameObject.GetComponent<CheckNewModules>().type)
 		{
 			case Type.DIANA:
-				other.gameObject.GetComponent<CheckNewModules>().PlayEvent();
+				other.gameObject.GetComponent<CheckNewModules>().PlayEvent(false);
 				break;
 		}
 

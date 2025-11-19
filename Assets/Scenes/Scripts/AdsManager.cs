@@ -27,7 +27,7 @@ public class AdsManager : MonoBehaviour
 
 	public void ShowAdForEnergy()
 	{
-		int batteryCharges = PlayerPrefs.GetInt("CargasBateria", 0);
+		int batteryCharges = PlayerPrefs.GetInt("CargasBateria", 5);
 		batteryCharges += 5;
 
 		// 2. Guardar las nuevas cargas
@@ -36,7 +36,7 @@ public class AdsManager : MonoBehaviour
 
 	public void ShowAdForUndo()
 	{
-		int UndoCharges = PlayerPrefs.GetInt("Undo", 0);
+		int UndoCharges = PlayerPrefs.GetInt("Undo", 5);
 		UndoCharges += 3;
 
 		// 2. Guardar las nuevas cargas
@@ -66,7 +66,7 @@ public class AdsManager : MonoBehaviour
 
 	public void Buy50Energy()
 	{
-		int batteryCharges = PlayerPrefs.GetInt("CargasBateria", 0);
+		int batteryCharges = PlayerPrefs.GetInt("CargasBateria", 5);
 		batteryCharges += 50;
 
 		// 2. Guardar las nuevas cargas
@@ -75,7 +75,7 @@ public class AdsManager : MonoBehaviour
 
 	public void Buy100Energy()
 	{
-		int batteryCharges = PlayerPrefs.GetInt("CargasBateria", 0);
+		int batteryCharges = PlayerPrefs.GetInt("CargasBateria", 5);
 		batteryCharges += 100;
 
 		// 2. Guardar las nuevas cargas
@@ -84,7 +84,7 @@ public class AdsManager : MonoBehaviour
 
 	public void Buy50Undo()
 	{
-		int UndoCharges = PlayerPrefs.GetInt("Undo", 0);
+		int UndoCharges = PlayerPrefs.GetInt("Undo", 5);
 		UndoCharges += 50;
 
 		// 2. Guardar las nuevas cargas
@@ -93,7 +93,7 @@ public class AdsManager : MonoBehaviour
 
 	public void Buy100Undo()
 	{
-		int UndoCharges = PlayerPrefs.GetInt("Undo", 0);
+		int UndoCharges = PlayerPrefs.GetInt("Undo", 5);
 		UndoCharges += 100;
 
 		// 2. Guardar las nuevas cargas

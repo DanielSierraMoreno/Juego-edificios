@@ -51,7 +51,7 @@ public class Calendario : MonoBehaviour
 		}
 
 		// Inicializar los valores desde PlayerPrefs
-		batteryCharges = PlayerPrefs.GetInt(CARGAS_BATERIA_KEY, 0);
+		batteryCharges = PlayerPrefs.GetInt(CARGAS_BATERIA_KEY, 5);
 		UpdateBatteryChargeDisplay();
 
 		// Suscribirse y solicitar la hora al iniciar la escena
@@ -290,6 +290,7 @@ public class Calendario : MonoBehaviour
 		PlayerPrefs.SetInt(RACHA_KEY, currentStreak);
 		PlayerPrefs.SetString(ULTIMA_FECHA_RACHA_KEY, todayString);
 		PlayerPrefs.Save();
+		UpdateStreakDisplay();
 
 	}
 
@@ -336,9 +337,9 @@ public class Calendario : MonoBehaviour
 			currentStreak = PlayerPrefs.GetInt(RACHA_KEY, 1);
 
 			// 1. Sumar la racha actual a las cargas de batería
-			batteryCharges = PlayerPrefs.GetInt(CARGAS_BATERIA_KEY, 0);
+			batteryCharges = PlayerPrefs.GetInt(CARGAS_BATERIA_KEY, 5);
 			batteryCharges += currentStreak;
-			PlayerPrefs.SetInt("Undo", PlayerPrefs.GetInt("Undo", 0) + currentStreak);
+			PlayerPrefs.SetInt("Undo", PlayerPrefs.GetInt("Undo", 5) + currentStreak);
 
 			// 2. Guardar las nuevas cargas
 			PlayerPrefs.SetInt(CARGAS_BATERIA_KEY, batteryCharges);
@@ -367,7 +368,7 @@ public class Calendario : MonoBehaviour
 	{
 		if (streakDisplay != null)
 		{
-			streakDisplay.text = currentStreak.ToString();
+			streakDisplay.text = "X"+currentStreak.ToString();
 		}
 	}
 

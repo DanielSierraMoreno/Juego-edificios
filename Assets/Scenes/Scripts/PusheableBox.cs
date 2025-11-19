@@ -1,4 +1,6 @@
 using DG.Tweening;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class PusheableBox : MonoBehaviour
@@ -8,11 +10,11 @@ public class PusheableBox : MonoBehaviour
 	private const int GROUND_MASK = (1 << 3) | (1 << 6);
 	public bool moving = false;
 	public float gravityVel = 0;
-
+	public List<PusheableBox> boxes;
 	// Start is called once before the first execution of Update after the MonoBehaviour is created
 	void Start()
 	{
-
+		boxes = new List<PusheableBox>();
 	}
 
 	// Update is called once per frame
@@ -117,6 +119,124 @@ public class PusheableBox : MonoBehaviour
 	{
 		moving = false;
 	}
+	public bool CheckPush(Vector3 direction)
+	{
+		// Obtener el Collider de la caja para conocer su tamaño
+		Collider boxCollider = GetComponent<Collider>();
+
+		// Si no hay Collider o si ya se está moviendo, no se puede empujar.
+		if (boxCollider == null || moving)
+		{
+			return true;
+		}
+
+		// --- 1. Preparar el BoxCast ---
+
+		// Calcular el destino (la posición final deseada)
+		Vector3 targetPosition = this.transform.position + direction;
+		float distance = direction.magnitude * 0.98f;
+		Vector3 halfExtents = boxCollider.bounds.extents * 0.98f;
+		Vector3 origin = this.transform.position;
+		Vector3 normalizedDirection = direction.normalized;
+		int layerMask = ~0; // Todos los layers
+
+		RaycastHit[] hits = Physics.BoxCastAll(origin, halfExtents, normalizedDirection,
+												   this.transform.rotation, distance,
+												   layerMask, QueryTriggerInteraction.Ignore);
+
+		// 3. Procesar los resultados
+
+		// Filtramos para ignorar la colisión de la propia caja con la que estamos trabajando.
+		// Además, los ordenamos por distancia para procesar el más lejano (el final de la cadena) primero.
+		var relevantHits = hits
+			.Where(hit => hit.collider.gameObject != this.gameObject)
+			.OrderByDescending(hit => hit.distance)
+			.ToList();
+
+		// Bandera para rastrear si algún empuje falló en la cadena.
+		bool pushChainSuccessful = true;
+
+
+		foreach (RaycastHit hit in relevantHits)
+		{
+			PusheableBox hitBox = hit.collider.gameObject.GetComponent<PusheableBox>();
+
+			// 3a. Colisión con OBSTÁCULO (Algo que NO es PusheableBox)
+			if (hitBox == null)
+			{
+				// [REQUISITO 1]: ¡Colisión detectada con un obstáculo fijo! 
+				// Esto anula toda la cadena de empuje inmediatamente.
+				// No se necesitan más comprobaciones, ya que este es el punto de falla definitivo.
+				// Debug.Log("Falla: Obstáculo fijo detectado en la trayectoria: " + hit.collider.gameObject.name);
+				return false;
+			}
+			else
+			{
+				// 3b. Colisión con OTRA PusheableBox (Empujable)
+
+				// [REQUISITO 2 y 3]: Intentar empujar la siguiente caja de forma recursiva.
+				// Si el Push recursivo devuelve 'false', la cadena falla.
+				if (!hitBox.CheckPush(direction))
+				{
+					// El empuje de una caja subsiguiente falló.
+					// Marcamos el fallo y salimos del bucle foreach, ya que no se puede mover nada más.
+					pushChainSuccessful = false;
+					break;
+				}
+
+				boxes.Add(hitBox);
+			}
+		}
+
+		// 4. Decisión Final de Movimiento
+
+		// [REQUISITO 3 y 4]: Si la bandera es false (alguna caja falló) o se detectó un obstáculo 
+		// (el cual ya devolvió false antes del bucle, pero lo comprobamos por seguridad), 
+		// devolvemos false. Si llegamos aquí con 'true', la cadena fue exitosa.
+		if (!pushChainSuccessful)
+		{
+			// El empuje de una caja más adelante en la cadena falló.
+			return false;
+		}
+
+		// --- 4. Si no hay colisión, se realiza el movimiento ---
+
+		return true;
+	}
+	public void OnlyPush(Vector3 direction)
+	{
+		bool push = true;
+		foreach (PusheableBox box1 in boxes)
+		{
+			box1.OnlyPush(direction);
+			push = false;
+		}
+
+		boxes.Clear();
+		//if(!push) 
+		//{ 
+		//	return;
+		//}
+
+		Vector3 targetPosition = this.transform.position + direction;
+
+		moving = true;
+
+		if (PlayerController.Instance.currentSavedMove.pusheableBoxes == null)
+			PlayerController.Instance.currentSavedMove.pusheableBoxes = new List<PlayerController.PusheableBoxStruct>();
+
+		PlayerController.PusheableBoxStruct box;
+		box.currentPos = targetPosition;
+		box.movement = this.transform.position;
+		box.box = this;
+
+		PlayerController.Instance.currentSavedMove.pusheableBoxes.Add(box);
+
+		// Usamos 'direction' porque DoMove necesita el desplazamiento total.
+		this.transform.DOMove(targetPosition, 0.25f);
+		Invoke("Reset", 0.25f);
+		return;
+	}
 	public bool Push(Vector3 direction)
 	{
 		// Obtener el Collider de la caja para conocer su tamaño
@@ -132,44 +252,111 @@ public class PusheableBox : MonoBehaviour
 
 		// Calcular el destino (la posición final deseada)
 		Vector3 targetPosition = this.transform.position + direction;
-
-		// La distancia a verificar es la magnitud del vector de dirección. 
-		// Como ya normalizaste 'direction' a magnitud 1.0, esta es la distancia.
-		float distance = direction.magnitude*0.98f;
-
-		// Puesto que 'direction' ya está normalizado a 1, la distancia es 1 unidad.
-
-		// Los 'halfExtents' del BoxCast (mitad del tamaño de la caja)
-		Vector3 halfExtents = boxCollider.bounds.extents * 0.98f;
-
-		// El origen de la verificación es la posición actual
+		float distance = direction.magnitude * 0.95f;
+		Vector3 halfExtents = boxCollider.bounds.extents * 0.95f;
 		Vector3 origin = this.transform.position;
-
-		// La dirección del BoxCast
-		// Unity's BoxCast requires the direction to be normalized separately,
-		// although 'direction' should already be normalized from the caller.
 		Vector3 normalizedDirection = direction.normalized;
+		int layerMask = ~((1 << 7) | (1 << 8));
 
-		// --- 2. Verificar Colisión con BoxCast ---
+		RaycastHit[] hits = Physics.BoxCastAll(origin, halfExtents, normalizedDirection,
+												   this.transform.rotation, distance,
+												   layerMask, QueryTriggerInteraction.Ignore);
 
-		RaycastHit hit;
-		// LayerMask opcionalmente para ignorar triggers o la propia caja
-		// Aquí usamos un LayerMask de '-1' (todos) o puedes definir una para los obstáculos.
-		int layerMask = ~0;
+		// 3. Procesar los resultados
 
-		// BoxCast comprueba si la caja, al ser 'barrida' una unidad de distancia, choca con algo.
-		if (Physics.BoxCast(origin, halfExtents, normalizedDirection, out hit, this.transform.rotation, distance, layerMask, QueryTriggerInteraction.Ignore))
+		// Filtramos para ignorar la colisión de la propia caja con la que estamos trabajando.
+		// Además, los ordenamos por distancia para procesar el más lejano (el final de la cadena) primero.
+		var relevantHits = hits
+			.Where(hit => hit.collider.gameObject != this.gameObject)
+			.OrderByDescending(hit => hit.distance)
+			.ToList();
+
+		// Bandera para rastrear si algún empuje falló en la cadena.
+		bool pushChainSuccessful = true;
+
+
+		foreach (RaycastHit hit in relevantHits)
 		{
-			// 3. ¡Colisión detectada! No se mueve la caja.
-			// Opcional: Puedes verificar si el objeto golpeado es un PusheableBox o un obstáculo.
+			PusheableBox hitBox = hit.collider.gameObject.GetComponent<PusheableBox>();
 
-			// Debug.Log("Colisión detectada con: " + hit.collider.gameObject.name);
+			// 3a. Colisión con OBSTÁCULO (Algo que NO es PusheableBox)
+			if (hitBox == null)
+			{
+				if(hit.transform.gameObject.layer != 8)
+				{
+					if(hit.transform.gameObject.GetComponentInParent<ModularPlayerPiece>() != null)
+					{
+						if (!PlayerController.Instance.IsModuleIncluded(hit.transform.gameObject.GetComponentInParent<ModularPlayerPiece>()))
+						{
+							return false;
+						}
+					}
+					else
+						return false;
+				}
+				// [REQUISITO 1]: ¡Colisión detectada con un obstáculo fijo! 
+				// Esto anula toda la cadena de empuje inmediatamente.
+				// No se necesitan más comprobaciones, ya que este es el punto de falla definitivo.
+				// Debug.Log("Falla: Obstáculo fijo detectado en la trayectoria: " + hit.collider.gameObject.name);
+			}
+			else
+			{
+				// 3b. Colisión con OTRA PusheableBox (Empujable)
+
+				// [REQUISITO 2 y 3]: Intentar empujar la siguiente caja de forma recursiva.
+				// Si el Push recursivo devuelve 'false', la cadena falla.
+				if (!hitBox.CheckPush(direction))
+				{
+					// El empuje de una caja subsiguiente falló.
+					// Marcamos el fallo y salimos del bucle foreach, ya que no se puede mover nada más.
+					pushChainSuccessful = false;
+					break;
+				}
+
+				boxes.Add(hitBox);
+
+			}
+		}
+
+		// 4. Decisión Final de Movimiento
+
+		// [REQUISITO 3 y 4]: Si la bandera es false (alguna caja falló) o se detectó un obstáculo 
+		// (el cual ya devolvió false antes del bucle, pero lo comprobamos por seguridad), 
+		// devolvemos false. Si llegamos aquí con 'true', la cadena fue exitosa.
+		if (!pushChainSuccessful)
+		{
+			// El empuje de una caja más adelante en la cadena falló.
 			return false;
 		}
 
+		bool push = true;
+		foreach (PusheableBox box1 in boxes)
+		{
+			box1.OnlyPush(direction);
+			push = false;
+		}
+
+		boxes.Clear();
+		//if (!push)
+		//{
+		//	return false;
+		//}
 		// --- 4. Si no hay colisión, se realiza el movimiento ---
 
 		moving = true;
+
+		if (PlayerController.Instance.currentSavedMove.pusheableBoxes == null)
+			PlayerController.Instance.currentSavedMove.pusheableBoxes = new List<PlayerController.PusheableBoxStruct>();
+
+		PlayerController.PusheableBoxStruct box;
+		box.currentPos = targetPosition;
+		box.movement = this.transform.position;
+		box.box = this;
+
+		PlayerController.Instance.currentSavedMove.pusheableBoxes.Add(box);
+
+
+
 
 		// Usamos 'direction' porque DoMove necesita el desplazamiento total.
 		this.transform.DOMove(targetPosition, 0.25f);

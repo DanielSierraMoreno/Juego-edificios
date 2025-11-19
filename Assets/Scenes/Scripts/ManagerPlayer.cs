@@ -92,7 +92,7 @@ public class ManagerPlayer : MonoBehaviour
     void Update()
     {
 		if(undoMove != null)
-			undoMove.text = PlayerPrefs.GetInt("Undo", 0).ToString();
+			undoMove.text = PlayerPrefs.GetInt("Undo", 5).ToString();
 
 		if (!checkEnd && !pause)
 		{
@@ -287,18 +287,36 @@ public class ManagerPlayer : MonoBehaviour
 		FindObjectOfType<AdsManager>().IncreaseAdCount(1);
 
 	}
+	public void InstantDead(Collider other)
+	{
+
+		other.enabled = false;
+
+		checkEnd = true;
+		eventoMuerte.Invoke();
+
+		PlayerController.Instance.stop = true;
+
+		GameObject newEmptyGameObject = new GameObject("New_Tracking_Target");
+		newEmptyGameObject.transform.position = PlayerController.Instance.cam.Target.TrackingTarget.transform.position;
+
+		PlayerController.Instance.cam.Target.TrackingTarget = newEmptyGameObject.transform;
+
+		FindObjectOfType<AdsManager>().IncreaseAdCount(1);
+
+	}
 
 	public void ResetMovement()
 	{
 		if (checkEnd)
 			return;
 
-		if(PlayerPrefs.GetInt("Undo", 0) > 0)
+		if(PlayerPrefs.GetInt("Undo", 5) > 0)
 		{
 			if (!PlayerController.Instance.ResetMove && PlayerController.Instance.historialMovimientos.Count != 0 && PlayerController.Instance.CanMove)
 			{
 				PlayerController.Instance.ResetingMove();
-				PlayerPrefs.SetInt("Undo", PlayerPrefs.GetInt("Undo", 0) - 1);
+				PlayerPrefs.SetInt("Undo", PlayerPrefs.GetInt("Undo", 5) - 1);
 			}
 		}
 		else

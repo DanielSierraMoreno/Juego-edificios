@@ -27,6 +27,8 @@ public class Configuracion : MonoBehaviour
 	public GameObject muteMusic, muteSFX;
 
 	public Toggle notifications;
+
+	public GameObject buttons;
 	private void Awake()
 	{
 		if (Instance != null && Instance != this)
@@ -43,7 +45,16 @@ public class Configuracion : MonoBehaviour
 
 		}
 	}
-
+	private void Update()
+	{
+		if(ManagerPlayer.Instance != null)
+		{
+			if(ManagerPlayer.Instance.checkEnd)
+				buttons.SetActive(false);
+			else
+				buttons.SetActive(true);
+		}
+	}
 	// ==========================================================
 	//                        GESTIÓN DE AUDIO
 	// ==========================================================

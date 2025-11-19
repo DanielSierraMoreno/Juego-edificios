@@ -17,7 +17,7 @@ public class UIEnergyShop : MonoBehaviour
 	void Update()
 	{
 		if(cargas != null) 
-			cargas.text = PlayerPrefs.GetInt("CargasBateria", 0).ToString();
+			cargas.text = PlayerPrefs.GetInt("CargasBateria", 5).ToString();
 	}
 
 	public void AD()
@@ -28,7 +28,7 @@ public class UIEnergyShop : MonoBehaviour
 
 	public void SpendCharge()
 	{
-		int i = PlayerPrefs.GetInt("CargasBateria", 0);
+		int i = PlayerPrefs.GetInt("CargasBateria", 5);
 
 		if(i > 0 && !FindObjectOfType<EnergyManager>().IsEnergyFull())
 		{

@@ -7,140 +7,215 @@ public class ModularPlayerPiece : MonoBehaviour
 {
 	public bool choque = false;
 	public bool isGrounded;
-	public bool isBox = false; // Se actualiza en Update()
+	public bool isBox = false;
+	public bool isModule = false;
+	public GameObject colision; // Será activado/desactivado
 
-	// Distancia del Raycast (LayerMask sigue siendo (1 << 3) | (1 << 6))
-	private const float RAY_DISTANCE = 0.55f;
-	private const int GROUND_MASK = (1 << 3) | (1 << 6);
+	// Distancia del Raycast y LayerMasks
+	private const float RAY_DISTANCE = 0.6f;
+	private const int GROUND_MASK = (1 << 3) | (1 << 6) | (1 << 8); // Capas 3, 6, 8
+
+	// Configuración para el OverlapBox
+	private const float OVERLAP_MULTIPLIER = 1.5f;
+	private const int MODULE_MASK = ~0; // Asumiendo que ModularPlayerPiece está en la capa Default (0) o lo ajustaremos.
+
 	LevelConditions levelConditions;
+
+	// Almacenamos el tamaño del propio Collider para el OverlapBox
+	private Vector3 halfExtents;
 
 	// Start is called once before the first execution of Update after the MonoBehaviour is created
 	void Start()
 	{
 		levelConditions = FindObjectOfType<LevelConditions>();
 
-	}
-
-	// Update is called once per frame
-	void Update()
-	{
-		Vector3 rayOrigin = transform.position;
-		RaycastHit hit; // Variable para almacenar la información del impacto
-
-		// Ejecutar el Raycast
-		isGrounded = Physics.Raycast(rayOrigin, Vector3.down, out hit, RAY_DISTANCE, GROUND_MASK);
-
-		// --- Lógica de Detección de Capa (NUEVO) ---
-		if (isGrounded)
+		// Obtener el tamaño del collider del objeto una vez al inicio.
+		Collider selfCollider = GetComponent<Collider>();
+		if (selfCollider is BoxCollider boxCollider)
 		{
-			// La propiedad 'layer' de un GameObject es un int (0-31)
-			int hitLayer = hit.collider.gameObject.layer;
-
-			if (hitLayer == 6)
-			{
-				// Si golpea la capa 6 (asumimos que es la capa de la "Caja")
-				isBox = true;
-			}
-			else if (hitLayer == 3)
-			{
-				// Si golpea la capa 3 (asumimos que es la capa del "Suelo Normal")
-				isBox = false;
-			}
-			// Si golpea otra capa (lo cual no debería ocurrir con la máscara actual) no hacemos nada,
-			// pero si la máscara cambiara, la variable mantendría su último valor.
+			// Si es un BoxCollider, usamos su tamaño.
+			halfExtents = boxCollider.size * 0.5f * OVERLAP_MULTIPLIER;
+		}
+		else
+		{
+			// Si no tiene BoxCollider, usamos un tamaño fijo basado en su escala.
+			halfExtents = transform.localScale * 0.5f * OVERLAP_MULTIPLIER;
 		}
 
+		// Aseguramos que el objeto de colisión se referencia correctamente
+		if (colision == null)
+		{
+			Debug.LogWarning("El objeto 'colision' no está asignado en el Inspector.");
+		}
+		else
+		{
+			colision.SetActive(false); // Empezamos con la colisión desactivada
+		}
+	}
 
+	// FixedUpdate es más apropiado para operaciones de física (Raycast, OverlapBox)
+	void FixedUpdate()
+	{
+		Vector3 rayOrigin = transform.position;
+		RaycastHit hit;
 
+		// 1. Detección de Suelo (Raycast)
+		isGrounded = Physics.Raycast(rayOrigin, Vector3.down, out hit, RAY_DISTANCE, GROUND_MASK);
+
+		// --- Lógica de Detección de Suelo y Módulos ---
+		if (isGrounded)
+		{
+			ModularPlayerPiece hitPiece = hit.collider.GetComponentInParent<ModularPlayerPiece>();
+
+			// Usamos una variable local para evitar múltiples llamadas
+			if (hitPiece != null)
+			{
+				if (PlayerController.Instance.IsModuleIncluded(hitPiece))
+				{
+					isModule = false;
+					isGrounded = false;
+					return;
+				}
+				else
+				{
+					isModule = true;
+				}
+			}
+			else
+			{
+				isModule = false;
+			}
+
+			// Detección de Capa
+			int hitLayer = hit.collider.gameObject.layer;
+			isBox = (hitLayer == 6);
+			// isBox = (hitLayer == 6) ? true : (hitLayer == 3) ? false : isBox; // Forma más limpia
+		}
+		else
+		{
+			isModule = false;
+			isBox = false;
+		}
+
+		// 2. Detección de Módulos Cercanos (OverlapBox)
+		DetectNearbyModules();
+	}
+
+	// El Update ahora solo se usa para cosas no relacionadas con la física (si las hubiera).
+	void Update()
+	{
+		// El OverlapBox se ha movido a FixedUpdate.
+	}
+
+	void DetectNearbyModules()
+	{
+		// El OverlapBox comprueba si hay otros colliders dentro de un volumen.
+		// Nota: El OverlapBox excluye por defecto el propio objeto que lo ejecuta.
+		Collider[] nearbyColliders = Physics.OverlapBox(
+			transform.position,
+			halfExtents*2, // halfExtents ya incluye la multiplicación por 1.5
+			transform.rotation,
+			MODULE_MASK,
+			QueryTriggerInteraction.Ignore);
+
+		bool moduleFound = false;
+
+		foreach (Collider collider in nearbyColliders)
+		{
+			// No queremos chocar con nuestro propio collider (aunque OverlapBox suele evitarlo).
+			if (collider.gameObject == gameObject) continue;
+
+			// Comprobar si el objeto detectado tiene el script ModularPlayerPiece
+			if (collider.GetComponent<ModularPlayerPiece>() != null)
+			{
+				moduleFound = true;
+				break;
+			}
+		}
+
+		// --- Asignación al GameObject 'colision' ---
+		if (colision != null)
+		{
+			colision.SetActive(moduleFound);
+		}
 	}
 
 	public void Paint()
 	{
-		if (!isBox && isGrounded)
+		// Esta función se llama externamente, así que mantenemos el Raycast aquí
+		// para asegurar que las condiciones sean válidas en el momento del llamado.
+		// Sin embargo, si se llama inmediatamente después de FixedUpdate, este Raycast es redundante.
+
+		// Las variables isGrounded, isBox, isModule deberían haber sido actualizadas
+		// en FixedUpdate, pero por seguridad, podemos re-ejecutar la detección si es necesario.
+
+		// NOTA: Para simplificar, asumiremos que FixedUpdate ya actualizó las variables booleanas.
+
+		if (!isBox && isGrounded && !isModule)
 		{
-			// 1. Encontrar el objeto más cercano. Si no hay ninguno, 'paint' será null.
-			GameObject paint = GameObject.FindGameObjectsWithTag("Paint")
-				.OrderBy(p => Vector3.Distance(this.transform.position, p.transform.position))
-				.FirstOrDefault();
+			// **OPTIMIZACIÓN CRÍTICA**
+			// Reemplazamos FindGameObjectsWithTag().OrderBy() por Physics.OverlapSphere().
 
-			// 2. Determinar la distancia de control de forma segura:
-			//    Si 'paint' es null, la distancia es 'Mathf.Infinity' (garantizando > 0.5f).
-			//    Si 'paint' NO es null, la distancia es la distancia real.
-			float distanceToClosest = (paint != null)
-				? Vector3.Distance(this.transform.position, paint.transform.position)
-				: Mathf.Infinity;
+			// 1. Detectar si hay objetos "Paint" cercanos
+			// Se asume que los objetos "Paint" están en una capa específica (ej: 9)
+			// Si la capa no existe, usa la capa 0 (Default).
+			Collider[] nearbyPaint = Physics.OverlapSphere(
+				this.transform.position,
+				0.5f, // Distancia de control de 0.5f
+				LayerMask.GetMask("PaintLayer") // Reemplaza "PaintLayer" con la capa real.
+			);
 
-			// 3. Ejecutar la acción si la distancia supera el límite.
-			if (distanceToClosest > 0.5f)
+			// 2. Ejecutar la acción si NO hay pintura cercana (nearbyPaint.Length == 0)
+			if (nearbyPaint.Length == 0)
 			{
-				if(PlayerController.Instance.currentSavedMove.painted == null)
+				if (PlayerController.Instance.currentSavedMove.painted == null)
 					PlayerController.Instance.currentSavedMove.painted = new List<GameObject>();
 
 				PlayerController.Instance.currentSavedMove.painted.Add(Instantiate(levelConditions.paintInstance, this.transform.position, Quaternion.identity));
-				
-				// Incrementa el contador solo si la instancia del ManagerPlayer existe
+
 				if (ManagerPlayer.Instance != null)
 				{
 					ManagerPlayer.Instance.currentPaint++;
 				}
 			}
 		}
-
 	}
+
+	// El OnTriggerStay se mantiene sin cambios
 	private void OnTriggerStay(Collider other)
 	{
 		if (other.gameObject.GetComponent<PusheableBox>() != null)
 		{
 			Vector3 localPosition = other.transform.InverseTransformPoint(this.transform.position);
-
-			// 2. Determinar la dirección de empuje (Local X vs Local Z)
 			Vector3 finalPushDirectionLocal = Vector3.zero;
-
-			// El tamaño de la caja se puede obtener aquí, pero usaremos el umbral fijo 
-			// de 0.95 basado en tu solicitud. Asumimos una unidad de tamaño base.
 			float threshold = 0.5f;
 
-			// Comparamos el valor absoluto para encontrar el eje dominante
 			if (Mathf.Abs(localPosition.x) > Mathf.Abs(localPosition.z))
 			{
-				// El Pusher está más alejado en el Eje X local (Lateral)
-
-				if (localPosition.x > threshold) // Empuje desde la izquierda de la caja (Eje X positivo)
+				if (localPosition.x > threshold)
 				{
-					// La dirección final es el Eje X local POSITIVO
 					finalPushDirectionLocal = Vector3.right;
 				}
-				else if (localPosition.x < -threshold) // Empuje desde la derecha de la caja (Eje X negativo)
+				else if (localPosition.x < -threshold)
 				{
-					// La dirección final es el Eje X local NEGATIVO
 					finalPushDirectionLocal = Vector3.left;
 				}
 			}
 			else
 			{
-				// El Pusher está más alejado en el Eje Z local (Frontal/Trasero)
-
-				if (localPosition.z > threshold) // Empuje desde atrás de la caja (Eje Z positivo)
+				if (localPosition.z > threshold)
 				{
-					// La dirección final es el Eje Z local POSITIVO
 					finalPushDirectionLocal = Vector3.forward;
 				}
-				else if (localPosition.z < -threshold) // Empuje desde adelante de la caja (Eje Z negativo)
+				else if (localPosition.z < -threshold)
 				{
-					// La dirección final es el Eje Z local NEGATIVO
 					finalPushDirectionLocal = Vector3.back;
 				}
 			}
 
-			// --- 3. Convertir la dirección local a dirección mundial y empujar ---
-
 			if (finalPushDirectionLocal != Vector3.zero)
 			{
-				// Transformar el vector de dirección (que es LOCAL: 1,0,0 o 0,0,1) al espacio MUNDIAL
-				// La dirección de empuje es el eje de la caja que queremos mover.
 				Vector3 finalPushDirectionWorld = other.transform.TransformDirection(finalPushDirectionLocal);
-
-				// Normalizar la dirección final (aunque ya lo estará)
 				finalPushDirectionWorld.Normalize();
 
 				if (other.gameObject.GetComponent<PusheableBox>().Push(-finalPushDirectionWorld))
@@ -151,8 +226,11 @@ public class ModularPlayerPiece : MonoBehaviour
 
 		if (!other.isTrigger)
 		{
-			choque = true;
-			Invoke("ResetCol", 0.1f);
+			if (other.transform.gameObject.layer != 8)
+			{
+				choque = true;
+				Invoke("ResetCol", 0.1f);
+			}
 		}
 	}
 

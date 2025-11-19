@@ -9,6 +9,7 @@ public class UIConfirmLevel : MonoBehaviour
     public TMP_Text text;
 
     public UnityEvent showEvent, hideEvent;
+    bool loading = false;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -24,8 +25,13 @@ public class UIConfirmLevel : MonoBehaviour
 
     public void EnterLevel()
     {
+        if(loading) return;
 		if (FindObjectOfType<EnergyManager>().GastarEnergia())
+        {
+            loading = true;
 			FindObjectOfType<LoadingUI>().LoadScene(level);
+
+        }
 
 	}
 
