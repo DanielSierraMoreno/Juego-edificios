@@ -90,17 +90,17 @@ public class CheckNewModules : MonoBehaviour
 
         }
 
-		if(other.gameObject.CompareTag("Die") && type == Type.PLAYER_MODULE)
+		if (other.gameObject.CompareTag("Die") && type == Type.PLAYER_MODULE)
 		{
 			ManagerPlayer.Instance.Dead(other);
 
 		}
 
-		if (other.gameObject.CompareTag("InstantDie") && type == Type.PLAYER_MODULE)
-		{
-			ManagerPlayer.Instance.InstantDead(other);
+		//if (other.gameObject.CompareTag("InstantDie") && type == Type.PLAYER_MODULE)
+		//{
+		//	ManagerPlayer.Instance.InstantDead(other);
 
-		}
+		//}
 
 		if (type == Type.BULLET)
 		{
@@ -136,11 +136,11 @@ public class CheckNewModules : MonoBehaviour
 
 		}
 
-		if (other.gameObject.CompareTag("InstantDie") && type == Type.PLAYER_MODULE)
-		{
-			ManagerPlayer.Instance.InstantDead(other);
+		//if (other.gameObject.CompareTag("InstantDie") && type == Type.PLAYER_MODULE)
+		//{
+		//	ManagerPlayer.Instance.InstantDead(other);
 
-		}
+		//}
 	}
 	private void OnTriggerExit(Collider other)
 	{

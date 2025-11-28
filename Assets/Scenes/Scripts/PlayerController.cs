@@ -87,6 +87,7 @@ public class PlayerController : MonoBehaviour
 
 	public bool ResetMove = false;
 	public bool externalMove = false;
+	public AudioSource movSound, errorSound;
 	private void Awake()
 	{
 		historialMovimientos = new List<savedMove>();
@@ -150,7 +151,7 @@ public class PlayerController : MonoBehaviour
 
 			if (Physics.Raycast(this.transform.position, Vector3.down, out hitInfo, 0.75f, ~3, QueryTriggerInteraction.Ignore))
 			{
-				this.transform.position = new Vector3(this.transform.position.x, hitInfo.point.y + 0.5f, this.transform.position.z);
+				this.transform.position = new Vector3(this.transform.position.x, hitInfo.point.y + 0.505f, this.transform.position.z);
 			}
 
 				gravityVel = 0;
@@ -206,6 +207,7 @@ public class PlayerController : MonoBehaviour
 				currentSavedMove.pivotPos = Vector3.zero;
 
 				currentRotateTween.Kill();
+				errorSound.Play();
 
 				currentRotateTween = this.transform.DORotate(savedInitialRotation.eulerAngles, (Time.time - timeSaved));
 				error = true;
@@ -316,6 +318,7 @@ public class PlayerController : MonoBehaviour
 
 					}
 					Debug.Log("Move" + Time.time);
+					movSound.Play();
 
 					lastMoveTime = Time.time;
 					moved = true;
@@ -493,8 +496,8 @@ public class PlayerController : MonoBehaviour
 
 			}
 
-		
 
+		movSound.Play();
 		lastMoveTime = Time.time;
 		moved = true;
 

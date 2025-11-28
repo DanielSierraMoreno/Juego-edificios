@@ -356,8 +356,19 @@ public class PusheableBox : MonoBehaviour
 		PlayerController.Instance.currentSavedMove.pusheableBoxes.Add(box);
 
 
+		RaycastHit hit2;
+
+		// 3. Lanzar el Raycast
+		// Physics.Raycast(origen, dirección, out hit, distancia_maxima)
+		if (Physics.Raycast(this.transform.position, Vector3.up, out hit2, 1))
+		{
+			if(hit2.transform.GetComponent<PusheableBox>() != null)
+			{
+				hit2.transform.GetComponent<PusheableBox>().Push(direction);
+			}
 
 
+		}
 		// Usamos 'direction' porque DoMove necesita el desplazamiento total.
 		this.transform.DOMove(targetPosition, 0.25f);
 		Invoke("Reset", 0.25f);

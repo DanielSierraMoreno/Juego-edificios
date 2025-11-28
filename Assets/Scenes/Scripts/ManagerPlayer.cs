@@ -65,6 +65,7 @@ public class ManagerPlayer : MonoBehaviour
 	public TMP_Text undoMove;
 
 	public UnityEvent undoEmpty;
+	public AudioSource endAudio, deadAudio;
 	private void Awake()
 	{
 		levelConditions = FindObjectOfType<LevelConditions>();
@@ -149,6 +150,7 @@ public class ManagerPlayer : MonoBehaviour
 
 					if (count == pieces.Count)
 					{
+						endAudio.Play();
 						checkEnd = true;
 						evento.Invoke();
 						PlayerController.Instance.enabled = false;
@@ -160,6 +162,8 @@ public class ManagerPlayer : MonoBehaviour
 
 					if(currentPaint >= toPaint)
 					{
+						endAudio.Play();
+
 						checkEnd = true;
 						evento.Invoke();
 						PlayerController.Instance.enabled = false;
@@ -169,6 +173,8 @@ public class ManagerPlayer : MonoBehaviour
 
 					if (connect >= connectGoal)
 					{
+						endAudio.Play();
+
 						checkEnd = true;
 						evento.Invoke();
 						PlayerController.Instance.enabled = false;
@@ -176,13 +182,6 @@ public class ManagerPlayer : MonoBehaviour
 					break;
 
 			}
-
-
-
-
-
-
-
 
 		}
 	}
@@ -268,11 +267,14 @@ public class ManagerPlayer : MonoBehaviour
 
 	public void Dead(Collider other)
 	{
+		if (checkEnd)
+			return;
 		if(PlayerController.Instance.isGrounded)
 		{
 			return;
 		}
 		other.enabled = false;
+		deadAudio.Play();
 
 		checkEnd = true;
 		eventoMuerte.Invoke();
@@ -289,12 +291,13 @@ public class ManagerPlayer : MonoBehaviour
 	}
 	public void InstantDead(Collider other)
 	{
-
+		if (checkEnd)
+			return;
 		other.enabled = false;
 
 		checkEnd = true;
 		eventoMuerte.Invoke();
-
+		deadAudio.Play();
 		PlayerController.Instance.stop = true;
 
 		GameObject newEmptyGameObject = new GameObject("New_Tracking_Target");

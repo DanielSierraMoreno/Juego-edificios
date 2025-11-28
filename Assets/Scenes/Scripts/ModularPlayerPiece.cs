@@ -159,14 +159,12 @@ public class ModularPlayerPiece : MonoBehaviour
 			// 1. Detectar si hay objetos "Paint" cercanos
 			// Se asume que los objetos "Paint" están en una capa específica (ej: 9)
 			// Si la capa no existe, usa la capa 0 (Default).
-			Collider[] nearbyPaint = Physics.OverlapSphere(
-				this.transform.position,
-				0.5f, // Distancia de control de 0.5f
-				LayerMask.GetMask("PaintLayer") // Reemplaza "PaintLayer" con la capa real.
-			);
+			GameObject nearbyPaint = GameObject.FindGameObjectsWithTag("Paint")
+				.Where(t => Vector3.Distance(t.transform.position, this.transform.position) < 0.5f)
+				.FirstOrDefault();
 
 			// 2. Ejecutar la acción si NO hay pintura cercana (nearbyPaint.Length == 0)
-			if (nearbyPaint.Length == 0)
+			if (nearbyPaint == null)
 			{
 				if (PlayerController.Instance.currentSavedMove.painted == null)
 					PlayerController.Instance.currentSavedMove.painted = new List<GameObject>();
@@ -232,6 +230,7 @@ public class ModularPlayerPiece : MonoBehaviour
 				Invoke("ResetCol", 0.1f);
 			}
 		}
+
 	}
 
 	void ResetCol()
