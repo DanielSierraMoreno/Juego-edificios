@@ -1,4 +1,4 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 using System;
 using System.Collections;
 using System.Net.Http;
@@ -12,30 +12,30 @@ public class EnergyManager : MonoBehaviour
 	{
 		public int MAX_ENERGIA = 20;
 		public int TIEMPO_RECARGA_SECS = 300; // 5 minutos * 60 segundos
-		[Tooltip("EnergÌa actual del jugador.")]
+		[Tooltip("Energ√≠a actual del jugador.")]
 		public int EnergiaActual;
 		[Tooltip("Hora UTC guardada al salir (en Ticks).")]
 		public long UltimoAccesoTicks;
 
-		// Claves de PlayerPrefs
+		// Claves de GameDataManager.Instance
 		public string LLAVE_ENERGIA = "Energia";
 		public string LLAVE_ACCESO = "Acceso";
 	}
 
 	[SerializeField]
-	public GameManager gameManager; // InicializaciÛn
+	public GameManager gameManager; // Inicializaci√≥n
 
 	// --- Variables Privadas de Control ---
 	private TimeManager timeManager;
 	private Coroutine recargaCoroutine;
 
-	// NUEVA VARIABLE CRÕTICA: Hora UTC en la que debe ocurrir la siguiente recarga (en Ticks).
-	[Tooltip("Hora UTC en Ticks de la siguiente recarga de energÌa.")]
+	// NUEVA VARIABLE CR√çTICA: Hora UTC en la que debe ocurrir la siguiente recarga (en Ticks).
+	[Tooltip("Hora UTC en Ticks de la siguiente recarga de energ√≠a.")]
 	private long ProximaRecargaTicks;
-	private const string LLAVE_RECARGA_TICKS = "ProximaRecargaTicks"; // Clave de PlayerPrefs
+	private const string LLAVE_RECARGA_TICKS = "ProximaRecargaTicks"; // Clave de GameDataManager.Instance
 
-	// VARIABLE DE C¡LCULO: Segundos restantes (Actualizada en Update)
-	[Tooltip("Segundos restantes hasta que se recargue 1 punto de energÌa.")]
+	// VARIABLE DE C√ÅLCULO: Segundos restantes (Actualizada en Update)
+	[Tooltip("Segundos restantes hasta que se recargue 1 punto de energ√≠a.")]
 	[SerializeField]
 	private int segundosRestantesRecarga;
 
@@ -43,7 +43,7 @@ public class EnergyManager : MonoBehaviour
 
 	void Awake()
 	{
-		// ImplementaciÛn de Singleton
+		// Implementaci√≥n de Singleton
 		var existingManagers = FindObjectsOfType<EnergyManager>();
 		if (existingManagers.Length > 1)
 		{
@@ -55,11 +55,22 @@ public class EnergyManager : MonoBehaviour
 
 	void Start()
 	{
+		// Inicia el proceso de espera en lugar de la l√≥gica inmediata.
+		StartCoroutine(ExecuteLogicWhenReady());
+	}
+
+	IEnumerator ExecuteLogicWhenReady()
+	{
+		// Espera hasta que el GameDataManager confirme que la carga as√≠ncrona ha terminado.
+		while (GameDataManager.Instance == null || !GameDataManager.IsReady)
+		{
+			yield return null;
+		}
 		timeManager = FindObjectOfType<TimeManager>();
 		if (timeManager == null)
 		{
-			Debug.LogError("TimeManager no encontrado! Aseg˙rate de que est· en la escena.");
-			return;
+			Debug.LogError("TimeManager no encontrado! Aseg√∫rate de que est√° en la escena.");
+			yield return null;
 		}
 
 		CargarEstado();
@@ -70,12 +81,20 @@ public class EnergyManager : MonoBehaviour
 	}
 
 	// ------------------------------------------------------------------------------------------
-	// === LÛgica de ActualizaciÛn de Tiempo y UI ===
+	// === L√≥gica de Actualizaci√≥n de Tiempo y UI ===
 	// ------------------------------------------------------------------------------------------
 
 	void Update()
 	{
-		// Solo actualiza si no est· lleno
+		if (FindObjectOfType<GameDataManager>() != null)
+		{
+			// üõë BLOQUEO DE ENTRADA: Si el gestor de datos no est√° listo, sal del Update.
+			if (!GameDataManager.IsReady)
+			{
+				return;
+			}
+		}
+		// Solo actualiza si no est√° lleno
 		if (gameManager.EnergiaActual < gameManager.MAX_ENERGIA)
 		{
 			DateTime nowUtc = DateTime.UtcNow;
@@ -85,7 +104,7 @@ public class EnergyManager : MonoBehaviour
 			// Calcula el tiempo restante (TimeSpan)
 			TimeSpan timeLeft = targetTime - nowUtc;
 
-			// Si el tiempo se agotÛ (la recarga debiÛ haber ocurrido)
+			// Si el tiempo se agot√≥ (la recarga debi√≥ haber ocurrido)
 			if (timeLeft.TotalSeconds <= 0)
 			{
 				segundosRestantesRecarga = 0;
@@ -98,23 +117,23 @@ public class EnergyManager : MonoBehaviour
 		}
 		else
 		{
-			// Si est· lleno, el contador es 0
+			// Si est√° lleno, el contador es 0
 			segundosRestantesRecarga = 0;
 		}
 	}
 
 
 	// ------------------------------------------------------------------------------------------
-	// === LÛgica de Entrada/Salida (Guardado y Carga) ===
+	// === L√≥gica de Entrada/Salida (Guardado y Carga) ===
 	// ------------------------------------------------------------------------------------------
 
 	private void CargarEstado()
 	{
-		// Cargar EnergÌa
-		gameManager.EnergiaActual = PlayerPrefs.GetInt(gameManager.LLAVE_ENERGIA, gameManager.MAX_ENERGIA);
+		// Cargar Energ√≠a
+		gameManager.EnergiaActual = GameDataManager.Instance.GetInt(gameManager.LLAVE_ENERGIA, gameManager.MAX_ENERGIA);
 
 		// Cargar Hora de Salida (Ticks)
-		string ticksString = PlayerPrefs.GetString(gameManager.LLAVE_ACCESO, "0");
+		string ticksString = GameDataManager.Instance.GetString(gameManager.LLAVE_ACCESO, "0");
 		if (long.TryParse(ticksString, out long loadedTicks))
 		{
 			gameManager.UltimoAccesoTicks = loadedTicks;
@@ -124,8 +143,8 @@ public class EnergyManager : MonoBehaviour
 			gameManager.UltimoAccesoTicks = 0;
 		}
 
-		// CARGAR HORA DE LA PR”XIMA RECARGA (CRÕTICO)
-		string nextTicksString = PlayerPrefs.GetString(LLAVE_RECARGA_TICKS, "0");
+		// CARGAR HORA DE LA PR√ìXIMA RECARGA (CR√çTICO)
+		string nextTicksString = GameDataManager.Instance.GetString(LLAVE_RECARGA_TICKS, "0");
 		if (long.TryParse(nextTicksString, out long loadedNextTicks))
 		{
 			ProximaRecargaTicks = loadedNextTicks;
@@ -161,13 +180,13 @@ public class EnergyManager : MonoBehaviour
 			return;
 		}
 
-		// *** LÛgica para calcular recargas basadas en el tiempo transcurrido desde la SALIDA ***
+		// *** L√≥gica para calcular recargas basadas en el tiempo transcurrido desde la SALIDA ***
 
-		// 1. Calcular cu·nto tiempo queda entre la HORA OBJETIVO GUARDADA y la hora de REGRESO
+		// 1. Calcular cu√°nto tiempo queda entre la HORA OBJETIVO GUARDADA y la hora de REGRESO
 		DateTime targetTime = new DateTime(ProximaRecargaTicks, DateTimeKind.Utc);
 		TimeSpan tiempoDesdeTarget = horaDeRegresoUTC - targetTime;
 
-		// 2. Si tiempoDesdeTarget es positivo, ya deberÌa haber ocurrido al menos una recarga.
+		// 2. Si tiempoDesdeTarget es positivo, ya deber√≠a haber ocurrido al menos una recarga.
 		if (tiempoDesdeTarget.TotalSeconds > 0)
 		{
 			double segundosPasadosDesdeTarget = tiempoDesdeTarget.TotalSeconds;
@@ -177,26 +196,38 @@ public class EnergyManager : MonoBehaviour
 			gameManager.EnergiaActual += energiaRecargada;
 
 			// 3. Establecer el nuevo ProximaRecargaTicks
-			// Se calcula el tiempo residual y se aÒade a la hora de regreso (horaDeRegresoUTC)
+			// Se calcula el tiempo residual y se a√±ade a la hora de regreso (horaDeRegresoUTC)
 			double segundosResiduales = segundosPasadosDesdeTarget % gameManager.TIEMPO_RECARGA_SECS;
 			double tiempoRestanteNextRecarga = gameManager.TIEMPO_RECARGA_SECS - segundosResiduales;
 
 			ProximaRecargaTicks = horaDeRegresoUTC.AddSeconds(tiempoRestanteNextRecarga).Ticks;
 		}
-		// Si no, el ProximaRecargaTicks sigue siendo el guardado, no hay cambios en energÌa.
+		// Si no, el ProximaRecargaTicks sigue siendo el guardado, no hay cambios en energ√≠a.
 
-		Debug.Log($"Recarga Offline. EnergÌa Recargada: {gameManager.EnergiaActual}.");
+		Debug.Log($"Recarga Offline. Energ√≠a Recargada: {gameManager.EnergiaActual}.");
 	}
 
 	void OnApplicationPause(bool pause)
 	{
 		if (pause)
 		{
-			GuardarEstado();
+			// üõë BLOQUEO DE GUARDADO: 
+			// Solo guarda el estado si el GameDataManager ha terminado su inicializaci√≥n
+			if (GameDataManager.IsReady)
+			{
+				GuardarEstado();
+			}
+			else
+			{
+				// Opcional: Muestra un mensaje para debugging si el guardado es ignorado.
+				Debug.LogWarning("Guardado en pausa ignorado: El sistema no est√° inicializado (IsReady = false).");
+			}
 		}
-		else
+		else // pause = false (El juego se reanuda)
 		{
-			if (timeManager != null)
+			// üõë BLOQUEO DE REANUDACI√ìN: 
+			// Solo ejecuta la l√≥gica de tiempo si el sistema est√° inicializado.
+			if (GameDataManager.IsReady && timeManager != null)
 			{
 				timeManager.GetCurrentUTCTime();
 			}
@@ -212,17 +243,16 @@ public class EnergyManager : MonoBehaviour
 	{
 		long horaSalidaTicks = DateTime.UtcNow.Ticks;
 
-		PlayerPrefs.SetInt(gameManager.LLAVE_ENERGIA, gameManager.EnergiaActual);
-		PlayerPrefs.SetString(gameManager.LLAVE_ACCESO, horaSalidaTicks.ToString());
+		GameDataManager.Instance.SetInt(gameManager.LLAVE_ENERGIA, gameManager.EnergiaActual);
+		GameDataManager.Instance.SetString(gameManager.LLAVE_ACCESO, horaSalidaTicks.ToString());
 
-		// GUARDAR HORA DE LA PR”XIMA RECARGA (CRÕTICO)
-		PlayerPrefs.SetString(LLAVE_RECARGA_TICKS, ProximaRecargaTicks.ToString());
+		// GUARDAR HORA DE LA PR√ìXIMA RECARGA (CR√çTICO)
+		GameDataManager.Instance.SetString(LLAVE_RECARGA_TICKS, ProximaRecargaTicks.ToString());
 
-		PlayerPrefs.Save();
 	}
 
 	// ------------------------------------------------------------------------------------------
-	// === LÛgica de Recarga (Online) y Gasto ===
+	// === L√≥gica de Recarga (Online) y Gasto ===
 	// ------------------------------------------------------------------------------------------
 
 	private void ReiniciarRecargaEnJuego()
@@ -236,7 +266,7 @@ public class EnergyManager : MonoBehaviour
 
 		if (gameManager.EnergiaActual < gameManager.MAX_ENERGIA)
 		{
-			// Si la hora objetivo es 0 o ya pasÛ, la establecemos ahora
+			// Si la hora objetivo es 0 o ya pas√≥, la establecemos ahora
 			if (ProximaRecargaTicks == 0 || ProximaRecargaTicks < DateTime.UtcNow.Ticks)
 			{
 				ProximaRecargaTicks = DateTime.UtcNow.AddSeconds(gameManager.TIEMPO_RECARGA_SECS).Ticks;
@@ -247,7 +277,7 @@ public class EnergyManager : MonoBehaviour
 		}
 		else
 		{
-			ProximaRecargaTicks = 0; // Si est· lleno, resetea la hora objetivo
+			ProximaRecargaTicks = 0; // Si est√° lleno, resetea la hora objetivo
 			segundosRestantesRecarga = 0;
 		}
 	}
@@ -265,20 +295,20 @@ public class EnergyManager : MonoBehaviour
 				yield return new WaitForSeconds((float)timeToWait.TotalSeconds);
 			}
 
-			// Si la energÌa a˙n no est· llena (puede haber recargas manuales)
+			// Si la energ√≠a a√∫n no est√° llena (puede haber recargas manuales)
 			if (gameManager.EnergiaActual < gameManager.MAX_ENERGIA)
 			{
 				gameManager.EnergiaActual++;
-				GuardarEstado(); // Guarda la nueva energÌa
+				GuardarEstado(); // Guarda la nueva energ√≠a
 
-				Debug.Log($"EnergÌa recargada en juego. Nueva energÌa: {gameManager.EnergiaActual}");
+				Debug.Log($"Energ√≠a recargada en juego. Nueva energ√≠a: {gameManager.EnergiaActual}");
 
 				// Establece la hora objetivo para la siguiente recarga completa
 				ProximaRecargaTicks = DateTime.UtcNow.AddSeconds(gameManager.TIEMPO_RECARGA_SECS).Ticks;
 			}
 		}
 
-		// Si sale del loop (energÌa llena)
+		// Si sale del loop (energ√≠a llena)
 		recargaCoroutine = null;
 		ProximaRecargaTicks = 0;
 	}
@@ -293,10 +323,10 @@ public class EnergyManager : MonoBehaviour
 
 			gameManager.EnergiaActual--;
 
-			// 1. Guarda el estado inmediatamente (CRÕTICO para evitar el bug 6/6)
+			// 1. Guarda el estado inmediatamente (CR√çTICO para evitar el bug 6/6)
 			GuardarEstado();
 
-			// 2. L”GICA CLAVE: Solo reinicia el temporizador si la energÌa estaba llena (6/6).
+			// 2. L√ìGICA CLAVE: Solo reinicia el temporizador si la energ√≠a estaba llena (6/6).
 			// Si estaba recargando (ej: 5/6), no tocamos ProximaRecargaTicks.
 			if (estabaLLeno)
 			{
@@ -304,14 +334,14 @@ public class EnergyManager : MonoBehaviour
 				ProximaRecargaTicks = DateTime.UtcNow.AddSeconds(gameManager.TIEMPO_RECARGA_SECS).Ticks;
 			}
 
-			// 3. Reinicia la corrutina para asegurar que la espera empiece/contin˙e.
+			// 3. Reinicia la corrutina para asegurar que la espera empiece/contin√∫e.
 			ReiniciarRecargaEnJuego();
 
 			return true;
 		}
 		else
 		{
-			Debug.Log("No hay suficiente energÌa para gastar.");
+			Debug.Log("No hay suficiente energ√≠a para gastar.");
 			return false;
 		}
 	}
@@ -323,18 +353,18 @@ public class EnergyManager : MonoBehaviour
 
 		if (gameManager.EnergiaActual != oldEnergy)
 		{
-			// Si se aÒade energÌa, guardamos y verificamos si llegamos al m·ximo
+			// Si se a√±ade energ√≠a, guardamos y verificamos si llegamos al m√°ximo
 			GuardarEstado();
 			ReiniciarRecargaEnJuego();
 		}
 	}
 
 	// ------------------------------------------------------------------------------------------
-	// === MÈtodos P˙blicos para la UI ===
+	// === M√©todos P√∫blicos para la UI ===
 	// ------------------------------------------------------------------------------------------
 
 	/// <summary>
-	/// MÈtodo p˙blico para obtener los segundos restantes (usar en UI).
+	/// M√©todo p√∫blico para obtener los segundos restantes (usar en UI).
 	/// </summary>
 	public int GetSegundosRestantes()
 	{
@@ -342,20 +372,20 @@ public class EnergyManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Devuelve verdadero si la energÌa est· al m·ximo.
+	/// Devuelve verdadero si la energ√≠a est√° al m√°ximo.
 	/// </summary>
 	public bool IsEnergyFull()
 	{
 		return gameManager.EnergiaActual >= gameManager.MAX_ENERGIA;
 	}
 
-	// MÈtodo para obtener el valor actual de energÌa
+	// M√©todo para obtener el valor actual de energ√≠a
 	public int GetEnergyActual()
 	{
 		return gameManager.EnergiaActual;
 	}
 
-	// MÈtodo para obtener el valor m·ximo de energÌa
+	// M√©todo para obtener el valor m√°ximo de energ√≠a
 	public int GetMaxEnergy()
 	{
 		return gameManager.MAX_ENERGIA;

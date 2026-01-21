@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -89,11 +89,39 @@ public class ManagerPlayer : MonoBehaviour
 
 	}
 
-    // Update is called once per frame
-    void Update()
-    {
-		if(undoMove != null)
-			undoMove.text = PlayerPrefs.GetInt("Undo", 5).ToString();
+	public bool IsPause()
+	{
+		return !(!checkEnd && !pause);
+	}
+	// Update is called once per frame
+	void Update()
+	{
+
+
+		if (FindObjectOfType<GameDataManager>() != null)
+		{
+			if(NetworkChecker.Instance == null)
+			{
+				 return;
+			}
+
+			if (!NetworkChecker.Instance.isConnected)
+			{
+				return;
+			}
+			// ðŸ›‘ BLOQUEO DE ENTRADA: Si el gestor de datos no estÃ¡ listo, sal del Update.
+			if (!GameDataManager.IsReady)
+			{
+				return;
+			}
+		}
+		// ðŸ›‘ BLOQUEO DE ENTRADA: Si el gestor de datos no estÃ¡ listo, sal del Update.
+		if (!GameDataManager.IsReady)
+		{
+			return;
+		}
+		if (undoMove != null)
+			undoMove.text = GameDataManager.Instance.GetInt("Undo", 5).ToString();
 
 		if (!checkEnd && !pause)
 		{
@@ -150,6 +178,11 @@ public class ManagerPlayer : MonoBehaviour
 
 					if (count == pieces.Count)
 					{
+						FindObjectOfType<AdsManager>().IncreaseAdCount(2);
+						if (GameDataManager.Instance.GetInt("IsFirstLaunch", 0) == 0)
+						{
+							GameDataManager.Instance.SetInt("IsFirstLaunch", 1);
+						}
 						endAudio.Play();
 						checkEnd = true;
 						evento.Invoke();
@@ -162,6 +195,11 @@ public class ManagerPlayer : MonoBehaviour
 
 					if(currentPaint >= toPaint)
 					{
+						FindObjectOfType<AdsManager>().IncreaseAdCount(2);
+						if (GameDataManager.Instance.GetInt("IsFirstLaunch", 0) == 0)
+						{
+							GameDataManager.Instance.SetInt("IsFirstLaunch", 1);
+						}
 						endAudio.Play();
 
 						checkEnd = true;
@@ -173,6 +211,11 @@ public class ManagerPlayer : MonoBehaviour
 
 					if (connect >= connectGoal)
 					{
+						FindObjectOfType<AdsManager>().IncreaseAdCount(2);
+						if (GameDataManager.Instance.GetInt("IsFirstLaunch", 0) == 0)
+						{
+							GameDataManager.Instance.SetInt("IsFirstLaunch", 1);
+						}
 						endAudio.Play();
 
 						checkEnd = true;
@@ -194,17 +237,17 @@ public class ManagerPlayer : MonoBehaviour
 		Scene currentScene = SceneManager.GetActiveScene();
 		string currentName = currentScene.name; // Ejemplo: "Level 1"
 
-		// 1. Usa Regex para encontrar el número en el nombre de la escena
-		Match match = Regex.Match(currentName, @"\d+"); // Busca uno o más dígitos
+		// 1. Usa Regex para encontrar el nÃºmero en el nombre de la escena
+		Match match = Regex.Match(currentName, @"\d+"); // Busca uno o mÃ¡s dÃ­gitos
 
 		if (match.Success)
 		{
-			// 2. Extrae el número actual, lo convierte a entero y lo incrementa
+			// 2. Extrae el nÃºmero actual, lo convierte a entero y lo incrementa
 			if (int.TryParse(match.Value, out int currentLevelNumber))
 			{
 				int nextLevelNumber = currentLevelNumber + 1;
 
-				// 3. Reemplaza el número antiguo con el nuevo en el nombre de la escena
+				// 3. Reemplaza el nÃºmero antiguo con el nuevo en el nombre de la escena
 				// Ejemplo: Cambia "Level 1" por "Level 2"
 				string nextSceneName = Regex.Replace(currentName, @"\d+", nextLevelNumber.ToString());
 
@@ -226,16 +269,16 @@ public class ManagerPlayer : MonoBehaviour
 				}
 				catch (Exception e)
 				{
-					// Manejo si la escena no existe (ej. es el último nivel)
+					// Manejo si la escena no existe (ej. es el Ãºltimo nivel)
 					Debug.LogWarning($"No se pudo cargar la escena: {nextSceneName}. Probablemente has completado todos los niveles o hay un error en el nombre.");
-					// Opcional: Cargar un menú principal o pantalla de finalización
+					// Opcional: Cargar un menÃº principal o pantalla de finalizaciÃ³n
 					// SceneManager.LoadScene("MainMenu"); 
 				}
 			}
 		}
 		else
 		{
-			Debug.LogError($"La escena actual '{currentName}' no sigue el patrón esperado (Ej: Level 1). No se pudo encontrar un número.");
+			Debug.LogError($"La escena actual '{currentName}' no sigue el patrÃ³n esperado (Ej: Level 1). No se pudo encontrar un nÃºmero.");
 		}
 	}
 
@@ -255,10 +298,9 @@ public class ManagerPlayer : MonoBehaviour
 
 	public void ReturnMenu()
 	{
-		if (PlayerPrefs.GetInt("IsFirstLaunch", 0) == 0)
+		if (GameDataManager.Instance.GetInt("IsFirstLaunch", 0) == 0)
 		{
-			PlayerPrefs.SetInt("IsFirstLaunch", 1);
-			PlayerPrefs.Save();
+			GameDataManager.Instance.SetInt("IsFirstLaunch", 1);
 
 		}
 
@@ -314,12 +356,12 @@ public class ManagerPlayer : MonoBehaviour
 		if (checkEnd)
 			return;
 
-		if(PlayerPrefs.GetInt("Undo", 5) > 0)
+		if(GameDataManager.Instance.GetInt("Undo", 5) > 0)
 		{
 			if (!PlayerController.Instance.ResetMove && PlayerController.Instance.historialMovimientos.Count != 0 && PlayerController.Instance.CanMove)
 			{
 				PlayerController.Instance.ResetingMove();
-				PlayerPrefs.SetInt("Undo", PlayerPrefs.GetInt("Undo", 5) - 1);
+				GameDataManager.Instance.SetInt("Undo", GameDataManager.Instance.GetInt("Undo", 5) - 1);
 			}
 		}
 		else

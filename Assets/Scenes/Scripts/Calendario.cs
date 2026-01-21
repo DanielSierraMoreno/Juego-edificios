@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine.UI;
+using System.Collections;
 
 public class Calendario : MonoBehaviour
 {
@@ -43,21 +44,33 @@ public class Calendario : MonoBehaviour
 	public static Calendario Instance { get; private set; }
 	void Start()
 	{
+		// Inicia el proceso de espera en lugar de la lógica inmediata.
+		StartCoroutine(ExecuteLogicWhenReady());
+	}
+
+	IEnumerator ExecuteLogicWhenReady()
+	{
+		// Espera hasta que el GameDataManager confirme que la carga asíncrona ha terminado.
+		while (GameDataManager.Instance == null || !GameDataManager.IsReady)
+		{
+			yield return null;
+		}
+
 		timeManager = FindObjectOfType<TimeManager>();
 		if (timeManager == null)
 		{
 			Debug.LogError("TimeManager no encontrado!");
-			return;
+			yield return null;
 		}
 
-		// Inicializar los valores desde PlayerPrefs
-		batteryCharges = PlayerPrefs.GetInt(CARGAS_BATERIA_KEY, 5);
+		// Inicializar los valores desde GameDataManager.Instance
+		batteryCharges = GameDataManager.Instance.GetInt(CARGAS_BATERIA_KEY, 5);
 		UpdateBatteryChargeDisplay();
 
 		// Suscribirse y solicitar la hora al iniciar la escena
 		timeManager.OnTimeReceived += SetServerDate;
 		timeManager.GetCurrentUTCTime();
-		currentStreak = PlayerPrefs.GetInt(RACHA_KEY, 1);
+		currentStreak = GameDataManager.Instance.GetInt(RACHA_KEY, 1);
 
 		UpdateStreakDisplay();
 	}
@@ -168,7 +181,7 @@ public class Calendario : MonoBehaviour
 			}
 
 			// Lógica de progreso para cada día
-			int progres = PlayerPrefs.GetInt("Day" + currentMonthDay.ToString() + "Month" + month.ToString() + "Year" + year.ToString() + "Progress", 0);
+			int progres = GameDataManager.Instance.GetInt("Day" + currentMonthDay.ToString() + "Month" + month.ToString() + "Year" + year.ToString() + "Progress", 0);
 
 			// Ocultar y mostrar estrellas
 			for (int k = 0; k < 3; k++)
@@ -193,7 +206,7 @@ public class Calendario : MonoBehaviour
 		}
 
 		// 4. Lógica del Slider y Estrellas para el día actual
-		int progressHoy = PlayerPrefs.GetInt("Day" + serverTime.Day.ToString() + "Month" + month.ToString() + "Year" + year.ToString() + "Progress", 0);
+		int progressHoy = GameDataManager.Instance.GetInt("Day" + serverTime.Day.ToString() + "Month" + month.ToString() + "Year" + year.ToString() + "Progress", 0);
 
 		// Ocultar y mostrar estrellas del día actual
 		for (int k = 0; k < this.stars.Count; k++)
@@ -214,7 +227,7 @@ public class Calendario : MonoBehaviour
 		// 5. Mostrar Mes y Año
 		this.month.text = serverTime.ToString("MMMM", CultureInfo.CurrentCulture) + " " + year.ToString();
 
-		racha.text = "X" + PlayerPrefs.GetInt(RACHA_KEY, 1).ToString();
+		racha.text = "X" + GameDataManager.Instance.GetInt(RACHA_KEY, 1).ToString();
 
 		if(progressHoy >= 9)
 		{
@@ -234,8 +247,8 @@ public class Calendario : MonoBehaviour
 	private void CheckAndUpdateStreak()
 	{
 		// 1. Obtener los datos almacenados
-		currentStreak = PlayerPrefs.GetInt(RACHA_KEY, 1);
-		string lastStreakDateString = PlayerPrefs.GetString(ULTIMA_FECHA_RACHA_KEY, string.Empty);
+		currentStreak = GameDataManager.Instance.GetInt(RACHA_KEY, 1);
+		string lastStreakDateString = GameDataManager.Instance.GetString(ULTIMA_FECHA_RACHA_KEY, string.Empty);
 
 		// 2. Determinar si la racha debe continuar, reiniciarse, o si ya se actualizó hoy
 		string todayString = serverTime.Date.ToString("yyyy-MM-dd");
@@ -252,7 +265,7 @@ public class Calendario : MonoBehaviour
 
 		// 3. Comprobar el progreso del día de AYER
 		string yesterdayProgressKey = $"Day{yesterday.Day}Month{yesterday.Month}Year{yesterday.Year}Progress";
-		int yesterdayProgress = PlayerPrefs.GetInt(yesterdayProgressKey, 0);
+		int yesterdayProgress = GameDataManager.Instance.GetInt(yesterdayProgressKey, 0);
 
 		// El día se cumple si el progreso es 9 o superior.
 		bool yesterdayCompleted = yesterdayProgress >= PROGRESSO_COMPLETO;
@@ -287,9 +300,8 @@ public class Calendario : MonoBehaviour
 		}
 
 		// 4. Guardar el nuevo valor de la racha y la fecha de HOY como última fecha de comprobación
-		PlayerPrefs.SetInt(RACHA_KEY, currentStreak);
-		PlayerPrefs.SetString(ULTIMA_FECHA_RACHA_KEY, todayString);
-		PlayerPrefs.Save();
+		GameDataManager.Instance.SetInt(RACHA_KEY, currentStreak);
+		GameDataManager.Instance.SetString(ULTIMA_FECHA_RACHA_KEY, todayString);
 		UpdateStreakDisplay();
 
 	}
@@ -308,19 +320,19 @@ public class Calendario : MonoBehaviour
 		int year = serverTime.Year;
 		string todayString = serverTime.Date.ToString("yyyy-MM-dd");
 
-		// Claves de PlayerPrefs
+		// Claves de GameDataManager.Instance
 		string progressKey = $"Day{day}Month{month}Year{year}Progress";
 		string rewardClaimedKey = REWARD_CLAIMED_BASE_KEY + todayString; // Clave única para hoy
 
 		// 1. Obtener el progreso ANTERIOR
-		int oldProgress = PlayerPrefs.GetInt(progressKey, 0);
+		int oldProgress = GameDataManager.Instance.GetInt(progressKey, 0);
 
 		// 2. Comprobar el estado del objetivo
 		bool wasCompletedBefore = oldProgress >= PROGRESSO_COMPLETO;
 		bool isCompletedNow = newProgressValue >= PROGRESSO_COMPLETO;
 
 		// 3. Comprobar si la recompensa ya fue entregada hoy
-		bool rewardAlreadyClaimed = PlayerPrefs.GetInt(rewardClaimedKey, 0) == 1;
+		bool rewardAlreadyClaimed = GameDataManager.Instance.GetInt(rewardClaimedKey, 0) == 1;
 
 
 		// =========================================================================
@@ -334,18 +346,18 @@ public class Calendario : MonoBehaviour
 		if (!wasCompletedBefore && isCompletedNow && !rewardAlreadyClaimed)
 		{
 			// Obtener el valor de la racha (calculado previamente al inicio del día)
-			currentStreak = PlayerPrefs.GetInt(RACHA_KEY, 1);
+			currentStreak = GameDataManager.Instance.GetInt(RACHA_KEY, 1);
 
 			// 1. Sumar la racha actual a las cargas de batería
-			batteryCharges = PlayerPrefs.GetInt(CARGAS_BATERIA_KEY, 5);
+			batteryCharges = GameDataManager.Instance.GetInt(CARGAS_BATERIA_KEY, 5);
 			batteryCharges += currentStreak;
-			PlayerPrefs.SetInt("Undo", PlayerPrefs.GetInt("Undo", 5) + currentStreak);
+			GameDataManager.Instance.SetInt("Undo", GameDataManager.Instance.GetInt("Undo", 5) + currentStreak);
 
 			// 2. Guardar las nuevas cargas
-			PlayerPrefs.SetInt(CARGAS_BATERIA_KEY, batteryCharges);
+			GameDataManager.Instance.SetInt(CARGAS_BATERIA_KEY, batteryCharges);
 
 			// 3. Marcar la recompensa como entregada para el día de hoy
-			PlayerPrefs.SetInt(rewardClaimedKey, 1);
+			GameDataManager.Instance.SetInt(rewardClaimedKey, 1);
 
 			Debug.Log($"?? Objetivo cumplido hoy! Ganó {currentStreak} Cargas de Batería.");
 
@@ -354,8 +366,7 @@ public class Calendario : MonoBehaviour
 		// =========================================================================
 
 		// 4. Guardar el nuevo valor de progreso
-		PlayerPrefs.SetInt(progressKey, newProgressValue);
-		PlayerPrefs.Save();
+		GameDataManager.Instance.SetInt(progressKey, newProgressValue);
 
 		// Opcional: Si quieres que el calendario se actualice inmediatamente (slider, estrellas), llama a Show()
 		// Show(); 

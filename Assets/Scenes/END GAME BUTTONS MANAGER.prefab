@@ -12943,6 +12943,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   cargas: {fileID: 0}
+  adButton: {fileID: 0}
 --- !u!1 &2926451837997639668
 GameObject:
   m_ObjectHideFlags: 0
@@ -13658,6 +13659,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   cargas: {fileID: 0}
+  adButton: {fileID: 5947890369480733421}
 --- !u!1 &3102564821830040817
 GameObject:
   m_ObjectHideFlags: 0
@@ -19576,6 +19578,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   cargas: {fileID: 0}
+  adButton: {fileID: 0}
 --- !u!114 &5383752696024278840
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24911,7 +24914,7 @@ MonoBehaviour:
     - rid: 3483169787462811831
       type: {class: MMF_Events, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
-        Active: 1
+        Active: 0
         UniqueID: -341806408
         Label: Unity Events
         ChannelMode: 0
@@ -44450,6 +44453,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   cargas: {fileID: 5122075439122210171}
+  adButton: {fileID: 0}
 --- !u!1001 &318530539545570962
 PrefabInstance:
   m_ObjectHideFlags: 0

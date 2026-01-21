@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class AdsManager : MonoBehaviour
 {
@@ -17,47 +17,40 @@ public class AdsManager : MonoBehaviour
 
 	// Update is called once per frame
 	void Update()
-    {
-        
-    }
+	{
+
+
+	}
     void ShowInterstitial()
     {
-
-    }
+		AdsConfiguration.Instance.ShowInterstitial();
+	}
 
 	public void ShowAdForEnergy()
 	{
-		int batteryCharges = PlayerPrefs.GetInt("CargasBateria", 5);
-		batteryCharges += 5;
-
-		// 2. Guardar las nuevas cargas
-		PlayerPrefs.SetInt("CargasBateria", batteryCharges);
+		AdsConfiguration.Instance.ShowAdForEnergy();
 	}
 
 	public void ShowAdForUndo()
 	{
-		int UndoCharges = PlayerPrefs.GetInt("Undo", 5);
-		UndoCharges += 3;
-
-		// 2. Guardar las nuevas cargas
-		PlayerPrefs.SetInt("Undo", UndoCharges);
+		AdsConfiguration.Instance.ShowAdForUndo();
 	}
 
 	public void IncreaseAdCount(int i)
     {
-		if (PlayerPrefs.GetInt(NO_ADS, 0) == 1)
+		if (GameDataManager.Instance.GetInt(NO_ADS, 0) == 1)
 			return;
 
-        int actual = PlayerPrefs.GetInt(AD_COUNT, 0);
+        int actual = GameDataManager.Instance.GetInt(AD_COUNT, 0);
 
         if (actual + i >= AdCountToShowAd)
         {
             ShowInterstitial();
-			PlayerPrefs.SetInt(AD_COUNT, 0);
+			GameDataManager.Instance.SetInt(AD_COUNT, 0);
 		}
 		else
         {
-		    PlayerPrefs.SetInt(AD_COUNT, actual + i);
+		    GameDataManager.Instance.SetInt(AD_COUNT, actual + i);
         }
 
 
@@ -66,44 +59,31 @@ public class AdsManager : MonoBehaviour
 
 	public void Buy50Energy()
 	{
-		int batteryCharges = PlayerPrefs.GetInt("CargasBateria", 5);
-		batteryCharges += 50;
+		IAPManager.Instance.Buy50EnergyProduct();
 
-		// 2. Guardar las nuevas cargas
-		PlayerPrefs.SetInt("CargasBateria", batteryCharges);
 	}
 
 	public void Buy100Energy()
 	{
-		int batteryCharges = PlayerPrefs.GetInt("CargasBateria", 5);
-		batteryCharges += 100;
+		IAPManager.Instance.Buy100EnergyProduct();
 
-		// 2. Guardar las nuevas cargas
-		PlayerPrefs.SetInt("CargasBateria", batteryCharges);
 	}
 
 	public void Buy50Undo()
 	{
-		int UndoCharges = PlayerPrefs.GetInt("Undo", 5);
-		UndoCharges += 50;
+		IAPManager.Instance.Buy50UndoProduct();
 
-		// 2. Guardar las nuevas cargas
-		PlayerPrefs.SetInt("Undo", UndoCharges);
 	}
 
 	public void Buy100Undo()
 	{
-		int UndoCharges = PlayerPrefs.GetInt("Undo", 5);
-		UndoCharges += 100;
+		IAPManager.Instance.Buy100UndoProduct();
 
-		// 2. Guardar las nuevas cargas
-		PlayerPrefs.SetInt("Undo", UndoCharges);
 	}
 
 	public void BuyNoAds()
 	{
-		PlayerPrefs.SetInt(NO_ADS, 1);
-
+		IAPManager.Instance.BuyNoAdsProduct();
 	}
 
 

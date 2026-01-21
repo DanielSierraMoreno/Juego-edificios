@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "842802767556",
+    "project_id": "shapshift-8cf8f",
+    "storage_bucket": "shapshift-8cf8f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:842802767556:android:8c5bd9d12eaed1ac45cb91",
+        "android_client_info": {
+          "package_name": "com.Vidid.ShapeShiftPuzzleLogicMerge"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTH8Yrhh5Yn7BwXOCkNaoIsty7Px19n4o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

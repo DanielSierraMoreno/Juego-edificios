@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.Audio; // ¡NECESARIO para AudioMixer!
 using TMPro;
-using UnityEngine.UI; // Necesario para TextMeshPro
+using UnityEngine.UI;
+using System.Collections; // Necesario para TextMeshPro
 
 public class Configuracion : MonoBehaviour
 {
@@ -29,8 +30,20 @@ public class Configuracion : MonoBehaviour
 	public Toggle notifications;
 
 	public GameObject buttons;
-	private void Awake()
+	void Start()
 	{
+		// Inicia el proceso de espera en lugar de la lógica inmediata.
+		StartCoroutine(ExecuteLogicWhenReady());
+	}
+
+	IEnumerator ExecuteLogicWhenReady()
+	{
+		// Espera hasta que el GameDataManager confirme que la carga asíncrona ha terminado.
+		while (GameDataManager.Instance == null || !GameDataManager.IsReady)
+		{
+			yield return null;
+		}
+
 		if (Instance != null && Instance != this)
 		{
 			Destroy(this.gameObject);
@@ -72,8 +85,7 @@ public class Configuracion : MonoBehaviour
 
 
 		masterMixer.SetFloat(MUSIC_PARAM, volume);
-		PlayerPrefs.SetFloat(MUSIC_PARAM, sliderValue);
-		PlayerPrefs.Save();
+		GameDataManager.Instance.SetFloat(MUSIC_PARAM, sliderValue);
 
 		if (sliderValue > 0)
 			muteMusic.SetActive(false);
@@ -91,8 +103,7 @@ public class Configuracion : MonoBehaviour
 
 
 		masterMixer.SetFloat(MUSIC_PARAM, volume);
-		PlayerPrefs.SetFloat(MUSIC_PARAM, sliderValue);
-		PlayerPrefs.Save();
+		GameDataManager.Instance.SetFloat(MUSIC_PARAM, sliderValue);
 
 		if (sliderValue > 0)
 			muteMusic.SetActive(false);
@@ -108,8 +119,7 @@ public class Configuracion : MonoBehaviour
 		sliderSFX.value = sliderValue;
 
 		masterMixer.SetFloat(SFX_PARAM, volume);
-		PlayerPrefs.SetFloat(SFX_PARAM, sliderValue);
-		PlayerPrefs.Save();
+		GameDataManager.Instance.SetFloat(SFX_PARAM, sliderValue);
 
 		if(sliderValue > 0)
 			muteSFX.SetActive(false);
@@ -128,8 +138,7 @@ public class Configuracion : MonoBehaviour
 		sliderSFX.value = sliderValue;
 
 		masterMixer.SetFloat(SFX_PARAM, volume);
-		PlayerPrefs.SetFloat(SFX_PARAM, sliderValue);
-		PlayerPrefs.Save();
+		GameDataManager.Instance.SetFloat(SFX_PARAM, sliderValue);
 
 		if (sliderValue > 0)
 			muteSFX.SetActive(false);
@@ -141,8 +150,8 @@ public class Configuracion : MonoBehaviour
 
 	public void CargarVolumenes()
 	{
-		float musicVol = PlayerPrefs.GetFloat(MUSIC_PARAM, 1f); // Por defecto: 1 (Máximo)
-		float sfxVol = PlayerPrefs.GetFloat(SFX_PARAM, 1f);
+		float musicVol = GameDataManager.Instance.GetFloat(MUSIC_PARAM, 1f); // Por defecto: 1 (Máximo)
+		float sfxVol = GameDataManager.Instance.GetFloat(SFX_PARAM, 1f);
 
 		sliderSFX.value = sfxVol;
 		sliderMusic.value = musicVol;
@@ -160,7 +169,7 @@ public class Configuracion : MonoBehaviour
 
 	public void SetMuteMusic()
 	{
-		if(PlayerPrefs.GetFloat(MUSIC_PARAM, 1f) > 0)
+		if(GameDataManager.Instance.GetFloat(MUSIC_PARAM, 1f) > 0)
 		{
 			muteMusic.SetActive(true);
 			SetMusicVolume(0);
@@ -179,7 +188,7 @@ public class Configuracion : MonoBehaviour
 
 	public void SetMuteSFX()
 	{
-		if (PlayerPrefs.GetFloat(SFX_PARAM, 1f) > 0)
+		if (GameDataManager.Instance.GetFloat(SFX_PARAM, 1f) > 0)
 		{
 			muteSFX.SetActive(true);
 			SetSFXVolume(0);
@@ -206,8 +215,7 @@ public class Configuracion : MonoBehaviour
 	public void ToggleAlerts(bool newValue)
 	{
 		alertsEnabled = newValue;
-		PlayerPrefs.SetInt("AlertsEnabled", alertsEnabled ? 1 : 0);
-		PlayerPrefs.Save();
+		GameDataManager.Instance.SetInt("AlertsEnabled", alertsEnabled ? 1 : 0);
 
 		Debug.Log($"Notificaciones (Alerts) cambiadas a: {alertsEnabled}");
 
@@ -217,8 +225,7 @@ public class Configuracion : MonoBehaviour
 	public void ToggleAlerts()
 	{
 		alertsEnabled = notifications.isOn;
-		PlayerPrefs.SetInt("AlertsEnabled", alertsEnabled ? 1 : 0);
-		PlayerPrefs.Save();
+		GameDataManager.Instance.SetInt("AlertsEnabled", alertsEnabled ? 1 : 0);
 
 		Debug.Log($"Notificaciones (Alerts) cambiadas a: {alertsEnabled}");
 
@@ -228,7 +235,7 @@ public class Configuracion : MonoBehaviour
 	public void CargarAjustes()
 	{
 		// Carga la configuración de notificaciones
-		alertsEnabled = PlayerPrefs.GetInt("AlertsEnabled", 1) == 1; // Por defecto: On
+		alertsEnabled = GameDataManager.Instance.GetInt("AlertsEnabled", 1) == 1; // Por defecto: On
 
 		notifications.isOn = alertsEnabled;
 	}

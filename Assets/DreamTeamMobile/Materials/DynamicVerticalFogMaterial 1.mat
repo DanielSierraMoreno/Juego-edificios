@@ -66,6 +66,7 @@ Material:
     - _FogDensity: 0.08
     - _FogNoise: 70
     - _FogSpeed: 0.02
+    - _Fog_Height: 0
     - _OpaqueCullMode: 2
     - _QueueControl: 1
     - _QueueOffset: 0

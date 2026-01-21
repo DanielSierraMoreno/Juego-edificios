@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +10,7 @@ public class EnergyUI : MonoBehaviour
 
 	public TMP_Text energyAmount, tiempoRestante;
 
-	// Variables internas para la l�gica
+	// Variables internas para la lógica
 	private float timer = 0f;
 	private bool isX = true;
 
@@ -25,7 +25,15 @@ public class EnergyUI : MonoBehaviour
 
 	// Update is called once per frame
 	void Update()
-    {
+	{
+		if (FindObjectOfType<GameDataManager>() != null)
+		{
+			// 🛑 BLOQUEO DE ENTRADA: Si el gestor de datos no está listo, sal del Update.
+			if (!GameDataManager.IsReady)
+			{
+				return;
+			}
+		}
 		energyAmount.text = energyManager.gameManager.EnergiaActual.ToString() + "\n   /\n       " + energyManager.gameManager.MAX_ENERGIA.ToString();
 		slider.value = energyManager.gameManager.EnergiaActual;
 
@@ -35,10 +43,10 @@ public class EnergyUI : MonoBehaviour
 
 			int totalSegundos = energyManager.GetSegundosRestantes();
 
-			// 1. Calcula Minutos (divisi�n entera)
+			// 1. Calcula Minutos (división entera)
 			int minutos = totalSegundos / 60;
 
-			// 2. Calcula Segundos (m�dulo)
+			// 2. Calcula Segundos (módulo)
 			int segundos = totalSegundos % 60;
 
 			// 3. Formatea la cadena a M,SS usando :D2 para rellenar con un cero (ej: 3 -> 03)

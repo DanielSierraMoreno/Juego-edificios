@@ -1,25 +1,25 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 using UnityEngine.EventSystems; // Necesario para detectar la UI
 using System.Collections.Generic; // Necesario para RaycastResult
 
 public class ScrollMenu_ForwardAxisLimits : MonoBehaviour
 {
-	// --- ConfiguraciÛn en el Inspector ---
-	[Header("Par·metros de Movimiento")]
+	// --- Configuraci√≥n en el Inspector ---
+	[Header("Par√°metros de Movimiento")]
 	public float dragSensitivity = 0.5f;
 	public float maxVelocity = 20f;
 	public float decelerationRate = 8f;
 
-	[Header("LÌmites de Desplazamiento")]
+	[Header("L√≠mites de Desplazamiento")]
 	public float maxScrollDistance = 10f;
 
-	[Header("DetecciÛn de Arrastre")]
+	[Header("Detecci√≥n de Arrastre")]
 	public float minDragThreshold = 5f;
 
-	[Header("ExclusiÛn Selectiva de UI")]
-	[Tooltip("El Tag que, si se encuentra en el elemento UI pulsado, BLOQUEAR¡ el arrastre.")]
+	[Header("Exclusi√≥n Selectiva de UI")]
+	[Tooltip("El Tag que, si se encuentra en el elemento UI pulsado, BLOQUEAR√Å el arrastre.")]
 	public string exclusionTag = "IgnorarArrastre";
-	[Tooltip("La sensibilidad al toque (PointerEventData) que se usar· para detectar la UI.")]
+	[Tooltip("La sensibilidad al toque (PointerEventData) que se usar√° para detectar la UI.")]
 	private PointerEventData pointerEventData;
 	private List<RaycastResult> raycastResults = new List<RaycastResult>();
 
@@ -41,12 +41,20 @@ public class ScrollMenu_ForwardAxisLimits : MonoBehaviour
 
 		if (eventSystem == null)
 		{
-			Debug.LogError("No se encontrÛ el EventSystem. Aseg˙rate de que existe en la escena.");
+			Debug.LogError("No se encontr√≥ el EventSystem. Aseg√∫rate de que existe en la escena.");
 		}
 	}
 
 	void Update()
 	{
+		if (FindObjectOfType<GameDataManager>() != null)
+		{
+			// üõë BLOQUEO DE ENTRADA: Si el gestor de datos no est√° listo, sal del Update.
+			if (!GameDataManager.IsReady)
+			{
+				return;
+			}
+		}
 		HandleInput();
 		ApplyMovement();
 		ApplyDeceleration();
@@ -54,38 +62,38 @@ public class ScrollMenu_ForwardAxisLimits : MonoBehaviour
 
 	// ----------------------------------------------------------------------------------------------------------------------
 
-	// Nuevo mÈtodo para verificar si se pulsÛ un elemento con el tag de exclusiÛn
+	// Nuevo m√©todo para verificar si se puls√≥ un elemento con el tag de exclusi√≥n
 	bool IsOverExclusionTag()
 	{
 		// Limpiar resultados anteriores
 		raycastResults.Clear();
 
-		// 1. Establecer la posiciÛn del raycast al puntero actual
+		// 1. Establecer la posici√≥n del raycast al puntero actual
 		pointerEventData.position = Input.mousePosition;
 
 		// 2. Ejecutar el raycast en el EventSystem
-		// Esto lanzar· rayos a todos los GraphicRaycasters activos y llenar· la lista raycastResults
+		// Esto lanzar√° rayos a todos los GraphicRaycasters activos y llenar√° la lista raycastResults
 		eventSystem.RaycastAll(pointerEventData, raycastResults);
 
 		// 3. Revisar los resultados
 		if (raycastResults.Count > 0)
 		{
-			// Siempre revisamos el primer elemento (el m·s cercano/superior)
+			// Siempre revisamos el primer elemento (el m√°s cercano/superior)
 			GameObject hitObject = raycastResults[0].gameObject;
 
-			// 4. Comprobar si el objeto pulsado tiene el tag de exclusiÛn
+			// 4. Comprobar si el objeto pulsado tiene el tag de exclusi√≥n
 			if (hitObject.CompareTag(exclusionTag))
 			{
 				return true; // Tocado un elemento que DEBEMOS IGNORAR
 			}
-			// Si quieres que afecte a los padres tambiÈn (ej. Button en un Panel)
+			// Si quieres que afecte a los padres tambi√©n (ej. Button en un Panel)
 			// if (hitObject.GetComponentInParent<Canvas>() != null && hitObject.GetComponentInParent<Canvas>().gameObject.CompareTag(exclusionTag))
 			// {
 			//     return true;
 			// }
 		}
 
-		return false; // No se pulsÛ UI o la UI pulsada no tiene el tag de exclusiÛn
+		return false; // No se puls√≥ UI o la UI pulsada no tiene el tag de exclusi√≥n
 	}
 
 	// ----------------------------------------------------------------------------------------------------------------------
@@ -94,7 +102,7 @@ public class ScrollMenu_ForwardAxisLimits : MonoBehaviour
 	{
 		if (Input.GetMouseButtonDown(0))
 		{
-			// VERIFICACI”N CLAVE: Si se pulsÛ un elemento con el Tag de exclusiÛn, retornamos.
+			// VERIFICACI√ìN CLAVE: Si se puls√≥ un elemento con el Tag de exclusi√≥n, retornamos.
 			if (IsOverExclusionTag())
 			{
 				isDragging = false;
@@ -107,7 +115,7 @@ public class ScrollMenu_ForwardAxisLimits : MonoBehaviour
 		}
 		else if (Input.GetMouseButton(0) && isDragging)
 		{
-			// El resto de la lÛgica de arrastre se mantiene igual
+			// El resto de la l√≥gica de arrastre se mantiene igual
 			Vector3 currentMousePosition = Input.mousePosition;
 			float deltaY = currentMousePosition.y - lastMousePosition.y;
 
@@ -138,13 +146,13 @@ public class ScrollMenu_ForwardAxisLimits : MonoBehaviour
 
 		float currentDistance = Vector3.Dot(potentialPosition - startPosition, transform.forward);
 
-		// ComprobaciÛn MÕNIMA (Distancia < 0)
+		// Comprobaci√≥n M√çNIMA (Distancia < 0)
 		if (currentDistance < 0)
 		{
 			currentVelocity = 0f;
 			potentialPosition = startPosition;
 		}
-		// ComprobaciÛn M¡XIMA (Distancia > maxScrollDistance)
+		// Comprobaci√≥n M√ÅXIMA (Distancia > maxScrollDistance)
 		else if (currentDistance > maxScrollDistance)
 		{
 			currentVelocity = 0f;

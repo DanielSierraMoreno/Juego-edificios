@@ -1,4 +1,4 @@
-using DG.Tweening;
+Ôªøusing DG.Tweening;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -20,6 +20,14 @@ public class PusheableBox : MonoBehaviour
 	// Update is called once per frame
 	void Update()
 	{
+		if (FindObjectOfType<GameDataManager>() != null)
+		{
+			// üõë BLOQUEO DE ENTRADA: Si el gestor de datos no est√° listo, sal del Update.
+			if (!GameDataManager.IsReady)
+			{
+				return;
+			}
+		}
 		Vector3 rayOrigin = transform.position;
 
 		// Ejecutar el Raycast
@@ -121,10 +129,10 @@ public class PusheableBox : MonoBehaviour
 	}
 	public bool CheckPush(Vector3 direction)
 	{
-		// Obtener el Collider de la caja para conocer su tamaÒo
+		// Obtener el Collider de la caja para conocer su tama√±o
 		Collider boxCollider = GetComponent<Collider>();
 
-		// Si no hay Collider o si ya se est· moviendo, no se puede empujar.
+		// Si no hay Collider o si ya se est√° moviendo, no se puede empujar.
 		if (boxCollider == null || moving)
 		{
 			return true;
@@ -132,7 +140,7 @@ public class PusheableBox : MonoBehaviour
 
 		// --- 1. Preparar el BoxCast ---
 
-		// Calcular el destino (la posiciÛn final deseada)
+		// Calcular el destino (la posici√≥n final deseada)
 		Vector3 targetPosition = this.transform.position + direction;
 		float distance = direction.magnitude * 0.98f;
 		Vector3 halfExtents = boxCollider.bounds.extents * 0.98f;
@@ -146,14 +154,14 @@ public class PusheableBox : MonoBehaviour
 
 		// 3. Procesar los resultados
 
-		// Filtramos para ignorar la colisiÛn de la propia caja con la que estamos trabajando.
-		// Adem·s, los ordenamos por distancia para procesar el m·s lejano (el final de la cadena) primero.
+		// Filtramos para ignorar la colisi√≥n de la propia caja con la que estamos trabajando.
+		// Adem√°s, los ordenamos por distancia para procesar el m√°s lejano (el final de la cadena) primero.
 		var relevantHits = hits
 			.Where(hit => hit.collider.gameObject != this.gameObject)
 			.OrderByDescending(hit => hit.distance)
 			.ToList();
 
-		// Bandera para rastrear si alg˙n empuje fallÛ en la cadena.
+		// Bandera para rastrear si alg√∫n empuje fall√≥ en la cadena.
 		bool pushChainSuccessful = true;
 
 
@@ -161,25 +169,25 @@ public class PusheableBox : MonoBehaviour
 		{
 			PusheableBox hitBox = hit.collider.gameObject.GetComponent<PusheableBox>();
 
-			// 3a. ColisiÛn con OBST¡CULO (Algo que NO es PusheableBox)
+			// 3a. Colisi√≥n con OBST√ÅCULO (Algo que NO es PusheableBox)
 			if (hitBox == null)
 			{
-				// [REQUISITO 1]: °ColisiÛn detectada con un obst·culo fijo! 
+				// [REQUISITO 1]: ¬°Colisi√≥n detectada con un obst√°culo fijo! 
 				// Esto anula toda la cadena de empuje inmediatamente.
-				// No se necesitan m·s comprobaciones, ya que este es el punto de falla definitivo.
-				// Debug.Log("Falla: Obst·culo fijo detectado en la trayectoria: " + hit.collider.gameObject.name);
+				// No se necesitan m√°s comprobaciones, ya que este es el punto de falla definitivo.
+				// Debug.Log("Falla: Obst√°culo fijo detectado en la trayectoria: " + hit.collider.gameObject.name);
 				return false;
 			}
 			else
 			{
-				// 3b. ColisiÛn con OTRA PusheableBox (Empujable)
+				// 3b. Colisi√≥n con OTRA PusheableBox (Empujable)
 
 				// [REQUISITO 2 y 3]: Intentar empujar la siguiente caja de forma recursiva.
 				// Si el Push recursivo devuelve 'false', la cadena falla.
 				if (!hitBox.CheckPush(direction))
 				{
-					// El empuje de una caja subsiguiente fallÛ.
-					// Marcamos el fallo y salimos del bucle foreach, ya que no se puede mover nada m·s.
+					// El empuje de una caja subsiguiente fall√≥.
+					// Marcamos el fallo y salimos del bucle foreach, ya que no se puede mover nada m√°s.
 					pushChainSuccessful = false;
 					break;
 				}
@@ -188,18 +196,18 @@ public class PusheableBox : MonoBehaviour
 			}
 		}
 
-		// 4. DecisiÛn Final de Movimiento
+		// 4. Decisi√≥n Final de Movimiento
 
-		// [REQUISITO 3 y 4]: Si la bandera es false (alguna caja fallÛ) o se detectÛ un obst·culo 
-		// (el cual ya devolviÛ false antes del bucle, pero lo comprobamos por seguridad), 
-		// devolvemos false. Si llegamos aquÌ con 'true', la cadena fue exitosa.
+		// [REQUISITO 3 y 4]: Si la bandera es false (alguna caja fall√≥) o se detect√≥ un obst√°culo 
+		// (el cual ya devolvi√≥ false antes del bucle, pero lo comprobamos por seguridad), 
+		// devolvemos false. Si llegamos aqu√≠ con 'true', la cadena fue exitosa.
 		if (!pushChainSuccessful)
 		{
-			// El empuje de una caja m·s adelante en la cadena fallÛ.
+			// El empuje de una caja m√°s adelante en la cadena fall√≥.
 			return false;
 		}
 
-		// --- 4. Si no hay colisiÛn, se realiza el movimiento ---
+		// --- 4. Si no hay colisi√≥n, se realiza el movimiento ---
 
 		return true;
 	}
@@ -239,10 +247,10 @@ public class PusheableBox : MonoBehaviour
 	}
 	public bool Push(Vector3 direction)
 	{
-		// Obtener el Collider de la caja para conocer su tamaÒo
+		// Obtener el Collider de la caja para conocer su tama√±o
 		Collider boxCollider = GetComponent<Collider>();
 
-		// Si no hay Collider o si ya se est· moviendo, no se puede empujar.
+		// Si no hay Collider o si ya se est√° moviendo, no se puede empujar.
 		if (boxCollider == null || moving)
 		{
 			return true;
@@ -250,7 +258,7 @@ public class PusheableBox : MonoBehaviour
 
 		// --- 1. Preparar el BoxCast ---
 
-		// Calcular el destino (la posiciÛn final deseada)
+		// Calcular el destino (la posici√≥n final deseada)
 		Vector3 targetPosition = this.transform.position + direction;
 		float distance = direction.magnitude * 0.95f;
 		Vector3 halfExtents = boxCollider.bounds.extents * 0.95f;
@@ -264,14 +272,14 @@ public class PusheableBox : MonoBehaviour
 
 		// 3. Procesar los resultados
 
-		// Filtramos para ignorar la colisiÛn de la propia caja con la que estamos trabajando.
-		// Adem·s, los ordenamos por distancia para procesar el m·s lejano (el final de la cadena) primero.
+		// Filtramos para ignorar la colisi√≥n de la propia caja con la que estamos trabajando.
+		// Adem√°s, los ordenamos por distancia para procesar el m√°s lejano (el final de la cadena) primero.
 		var relevantHits = hits
 			.Where(hit => hit.collider.gameObject != this.gameObject)
 			.OrderByDescending(hit => hit.distance)
 			.ToList();
 
-		// Bandera para rastrear si alg˙n empuje fallÛ en la cadena.
+		// Bandera para rastrear si alg√∫n empuje fall√≥ en la cadena.
 		bool pushChainSuccessful = true;
 
 
@@ -279,7 +287,7 @@ public class PusheableBox : MonoBehaviour
 		{
 			PusheableBox hitBox = hit.collider.gameObject.GetComponent<PusheableBox>();
 
-			// 3a. ColisiÛn con OBST¡CULO (Algo que NO es PusheableBox)
+			// 3a. Colisi√≥n con OBST√ÅCULO (Algo que NO es PusheableBox)
 			if (hitBox == null)
 			{
 				if(hit.transform.gameObject.layer != 8)
@@ -294,21 +302,21 @@ public class PusheableBox : MonoBehaviour
 					else
 						return false;
 				}
-				// [REQUISITO 1]: °ColisiÛn detectada con un obst·culo fijo! 
+				// [REQUISITO 1]: ¬°Colisi√≥n detectada con un obst√°culo fijo! 
 				// Esto anula toda la cadena de empuje inmediatamente.
-				// No se necesitan m·s comprobaciones, ya que este es el punto de falla definitivo.
-				// Debug.Log("Falla: Obst·culo fijo detectado en la trayectoria: " + hit.collider.gameObject.name);
+				// No se necesitan m√°s comprobaciones, ya que este es el punto de falla definitivo.
+				// Debug.Log("Falla: Obst√°culo fijo detectado en la trayectoria: " + hit.collider.gameObject.name);
 			}
 			else
 			{
-				// 3b. ColisiÛn con OTRA PusheableBox (Empujable)
+				// 3b. Colisi√≥n con OTRA PusheableBox (Empujable)
 
 				// [REQUISITO 2 y 3]: Intentar empujar la siguiente caja de forma recursiva.
 				// Si el Push recursivo devuelve 'false', la cadena falla.
 				if (!hitBox.CheckPush(direction))
 				{
-					// El empuje de una caja subsiguiente fallÛ.
-					// Marcamos el fallo y salimos del bucle foreach, ya que no se puede mover nada m·s.
+					// El empuje de una caja subsiguiente fall√≥.
+					// Marcamos el fallo y salimos del bucle foreach, ya que no se puede mover nada m√°s.
 					pushChainSuccessful = false;
 					break;
 				}
@@ -318,14 +326,14 @@ public class PusheableBox : MonoBehaviour
 			}
 		}
 
-		// 4. DecisiÛn Final de Movimiento
+		// 4. Decisi√≥n Final de Movimiento
 
-		// [REQUISITO 3 y 4]: Si la bandera es false (alguna caja fallÛ) o se detectÛ un obst·culo 
-		// (el cual ya devolviÛ false antes del bucle, pero lo comprobamos por seguridad), 
-		// devolvemos false. Si llegamos aquÌ con 'true', la cadena fue exitosa.
+		// [REQUISITO 3 y 4]: Si la bandera es false (alguna caja fall√≥) o se detect√≥ un obst√°culo 
+		// (el cual ya devolvi√≥ false antes del bucle, pero lo comprobamos por seguridad), 
+		// devolvemos false. Si llegamos aqu√≠ con 'true', la cadena fue exitosa.
 		if (!pushChainSuccessful)
 		{
-			// El empuje de una caja m·s adelante en la cadena fallÛ.
+			// El empuje de una caja m√°s adelante en la cadena fall√≥.
 			return false;
 		}
 
@@ -341,7 +349,7 @@ public class PusheableBox : MonoBehaviour
 		//{
 		//	return false;
 		//}
-		// --- 4. Si no hay colisiÛn, se realiza el movimiento ---
+		// --- 4. Si no hay colisi√≥n, se realiza el movimiento ---
 
 		moving = true;
 
@@ -359,7 +367,7 @@ public class PusheableBox : MonoBehaviour
 		RaycastHit hit2;
 
 		// 3. Lanzar el Raycast
-		// Physics.Raycast(origen, direcciÛn, out hit, distancia_maxima)
+		// Physics.Raycast(origen, direcci√≥n, out hit, distancia_maxima)
 		if (Physics.Raycast(this.transform.position, Vector3.up, out hit2, 1))
 		{
 			if(hit2.transform.GetComponent<PusheableBox>() != null)

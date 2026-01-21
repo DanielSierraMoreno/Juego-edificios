@@ -3,7 +3,10 @@ using TMPro;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using UnityEngine.SceneManagement; // ¡NECESARIO para cambiar de escena!
+using UnityEngine.SceneManagement;
+using System.Collections;
+using MoreMountains.Feedbacks;
+using UnityEngine.Events; // ¡NECESARIO para cambiar de escena!
 
 public class DailyRewards : MonoBehaviour
 {
@@ -23,14 +26,26 @@ public class DailyRewards : MonoBehaviour
 
 	private TimeManager timeManager;
 
+	public UnityEvent evento;
 	void Start()
 	{
+		// Inicia el proceso de espera en lugar de la lógica inmediata.
+		StartCoroutine(ExecuteLogicWhenReady());
+	}
+
+	IEnumerator ExecuteLogicWhenReady()
+	{
+		// Espera hasta que el GameDataManager confirme que la carga asíncrona ha terminado.
+		while (GameDataManager.Instance == null || !GameDataManager.IsReady)
+		{
+			yield return null;
+		}
 		// ===============================================
 		// LÓGICA DE PRIMER INICIO (FIRST LAUNCH)
 		// ===============================================
 
 		// Comprueba si la clave 'IsFirstLaunch' existe y su valor es 0 (valor por defecto).
-		if (PlayerPrefs.GetInt(IS_FIRST_LAUNCH_KEY, 0) == 0)
+		if (GameDataManager.Instance.GetInt(IS_FIRST_LAUNCH_KEY, 0) == 0)
 		{
 			Debug.Log("Primera vez que se inicia el juego. Saltando recompensas y cargando Level 1...");
 
@@ -40,9 +55,9 @@ public class DailyRewards : MonoBehaviour
 			SceneManager.LoadScene(LEVEL_ONE_SCENE_NAME);
 
 			// 3. Detener la ejecución de la función Start() aquí.
-			return;
+			yield return null;
 		}
-
+		evento.Invoke();
 		// ====================================================================
 		// LÓGICA DE RECOMPENSAS DIARIAS (SOLO SI YA HA JUGADO ANTERIORMENTE)
 		// ====================================================================
@@ -59,7 +74,7 @@ public class DailyRewards : MonoBehaviour
 		if (timeManager == null)
 		{
 			Debug.LogError("TimeManager no encontrado.");
-			return;
+			yield return null;
 		}
 
 		// 3. Suscribirse al evento y solicitar la hora para iniciar la verificación.
@@ -87,7 +102,7 @@ public class DailyRewards : MonoBehaviour
 	private void CheckDailyReward(DateTime today)
 	{
 		string todayString = today.Date.ToString("yyyy-MM-dd");
-		string lastRewardDateString = PlayerPrefs.GetString(LAST_REWARD_DATE_KEY, string.Empty);
+		string lastRewardDateString = GameDataManager.Instance.GetString(LAST_REWARD_DATE_KEY, string.Empty);
 
 		int dayIndex = GetDayIndex(today.DayOfWeek);
 
@@ -111,8 +126,7 @@ public class DailyRewards : MonoBehaviour
 		GrantReward(rewardAmount);
 
 		// 5. Guardar la fecha de hoy como la última fecha de recompensa
-		PlayerPrefs.SetString(LAST_REWARD_DATE_KEY, todayString);
-		PlayerPrefs.Save();
+		GameDataManager.Instance.SetString(LAST_REWARD_DATE_KEY, todayString);
 
 		Debug.Log($"¡Recompensa diaria disponible y reclamada de {today.DayOfWeek}! Cantidad: {rewardAmount}");
 	}
@@ -165,12 +179,12 @@ public class DailyRewards : MonoBehaviour
 	/// </summary>
 	private void GrantReward(int amount)
 	{
-		int batteryCharges = PlayerPrefs.GetInt("CargasBateria", 0);
+		int batteryCharges = GameDataManager.Instance.GetInt("CargasBateria", 0);
 		batteryCharges += amount;
-		PlayerPrefs.SetInt("Undo", PlayerPrefs.GetInt("Undo", 5) + amount);
+		GameDataManager.Instance.SetInt("Undo", GameDataManager.Instance.GetInt("Undo", 5) + amount);
 
 		// 2. Guardar las nuevas cargas
-		PlayerPrefs.SetInt("CargasBateria", batteryCharges);
+		GameDataManager.Instance.SetInt("CargasBateria", batteryCharges);
 
 		// ?? REEMPLAZA ESTO con tu lógica real de juego
 		Debug.Log($"Recompensa otorgada: {amount} de la moneda principal.");

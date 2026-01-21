@@ -1,25 +1,33 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using TMPro;
 
 public class NetworkChecker : MonoBehaviour
 {
+	// ðŸŽ¯ 1. DEFINICIÃ“N DEL SINGLETON (Propiedad estÃ¡tica pÃºblica)
+	public static NetworkChecker Instance { get; private set; }
+
 	// --- Referencias UI (Asignar en el Inspector) ---
 	public GameObject warningPanel;
 
-	// --- Mensaje de Aviso ---
-	// Puedes añadir una variable aquí para el mensaje si quieres que sea visible en el Inspector.
-
-	// --- Estado de Conexión ---
-	private bool isConnected = true;
+	// --- Estado de ConexiÃ³n ---
+	public bool isConnected = true;
 	private bool isGameBlocked = false;
 
 	// ------------------------------------------------------------------------------------------
 
-	void Start()
+	void Awake()
 	{
-		// Asumimos que aquí tienes la lógica de Singleton para DontDestroyOnLoad
-		// para evitar duplicados al cargar nuevas escenas.
-		DontDestroyOnLoad(this.gameObject);
+		// ðŸŽ¯ 2. LÃ³gica de InicializaciÃ³n Singleton
+		if (Instance != null && Instance != this)
+		{
+			// Destruye esta copia si ya existe otra instancia.
+			Destroy(gameObject);
+			return;
+		}
+
+		Instance = this;
+		// Permite que la instancia persista entre escenas.
+		DontDestroyOnLoad(gameObject);
 
 		// Inicializa el estado base al entrar
 		isConnected = HasRequiredConnection();
@@ -36,13 +44,14 @@ public class NetworkChecker : MonoBehaviour
 		}
 		else
 		{
-			Debug.Log("Juego iniciado con conexión.");
+			Debug.Log("Juego iniciado con conexiÃ³n.");
 		}
 	}
 
+
 	void Update()
 	{
-		// 1. Verificar el estado actual de la conexión en cada frame
+		// 1. Verificar el estado actual de la conexiÃ³n en cada frame
 		bool currentStatus = HasRequiredConnection();
 
 		// 2. Comprobar si ha habido un cambio de estado
@@ -52,12 +61,12 @@ public class NetworkChecker : MonoBehaviour
 
 			if (isConnected)
 			{
-				// Conexión recuperada (WiFi o Datos Móviles)
+				// ConexiÃ³n recuperada (WiFi o Datos MÃ³viles)
 				BlockGame(false);
 			}
 			else
 			{
-				// Conexión perdida (ninguna)
+				// ConexiÃ³n perdida (ninguna)
 				BlockGame(true);
 			}
 		}
@@ -76,38 +85,44 @@ public class NetworkChecker : MonoBehaviour
 
 		if (isGameBlocked)
 		{
-			// --- LÓGICA DE BLOQUEO ---
+			// --- LÃ“GICA DE BLOQUEO ---
 			if (warningPanel != null)
 			{
 				warningPanel.SetActive(true);
-				Debug.Log("Juego BLOQUEADO: Conexión de red requerida perdida.");
+				Debug.Log("Juego BLOQUEADO: ConexiÃ³n de red requerida perdida.");
 			}
-			// Time.timeScale = 0f; 
+			// Time.timeScale = 0f;Â 
 		}
 		else
 		{
-			// --- LÓGICA DE DESBLOQUEO ---
+			// --- LÃ“GICA DE DESBLOQUEO ---
 			if (warningPanel != null)
 			{
 				warningPanel.SetActive(false);
 			}
-			Debug.Log("Juego DESBLOQUEADO: Conexión de red recuperada.");
-			// Time.timeScale = 1f; 
+			Debug.Log("Juego DESBLOQUEADO: ConexiÃ³n de red recuperada.");
+			// Time.timeScale = 1f;Â 
 		}
+	}
+
+	// ðŸŽ¯ 3. MÃ©todo pÃºblico para que GameDataManager lo pueda consultar.
+	public bool IsConnected()
+	{
+		return isConnected;
 	}
 
 	public bool HasRequiredConnection()
 	{
 		NetworkReachability reachability = Application.internetReachability;
 
-		// ?? MODIFICACIÓN CLAVE: Incluir datos móviles.
+		// ?? MODIFICACIÃ“N CLAVE: Incluir datos mÃ³viles.
 		if (reachability == NetworkReachability.ReachableViaLocalAreaNetwork ||
 			reachability == NetworkReachability.ReachableViaCarrierDataNetwork)
 		{
 			return true;
 		}
 
-		// Si no hay conexión (NotReachable) o si ReachableViaCarrierDataNetwork falla por alguna razón.
+		// Si no hay conexiÃ³n (NotReachable) o si ReachableViaCarrierDataNetwork falla por alguna razÃ³n.
 		return false;
 	}
 }

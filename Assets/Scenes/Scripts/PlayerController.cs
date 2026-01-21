@@ -121,7 +121,27 @@ public class PlayerController : MonoBehaviour
 
 	void Update()
 	{
-		
+
+
+		if (FindObjectOfType<GameDataManager>() != null)
+		{
+			if (NetworkChecker.Instance == null)
+			{
+				return;
+			}
+
+			if (!NetworkChecker.Instance.isConnected)
+			{
+				return;
+			}
+			// 🛑 BLOQUEO DE ENTRADA: Si el gestor de datos no está listo, sal del Update.
+			if (!GameDataManager.IsReady)
+			{
+				return;
+			}
+		}
+
+
 
 		if (ResetMove)
 			return;

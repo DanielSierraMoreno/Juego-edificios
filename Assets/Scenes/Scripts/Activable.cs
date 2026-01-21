@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -15,9 +15,17 @@ public class Activable : MonoBehaviour
         
     }
 
-    // Update is called once per frame
-    void Update()
-    {
+	// Update is called once per frame
+	void Update()
+	{
+		if (FindObjectOfType<GameDataManager>() != null)
+		{
+			// 🛑 BLOQUEO DE ENTRADA: Si el gestor de datos no está listo, sal del Update.
+			if (!GameDataManager.IsReady)
+			{
+				return;
+			}
+		}
 		if (!checkEnd)
 		{
 			int count = 0;

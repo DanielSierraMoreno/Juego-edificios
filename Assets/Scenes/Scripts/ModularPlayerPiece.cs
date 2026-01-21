@@ -43,14 +43,14 @@ public class ModularPlayerPiece : MonoBehaviour
 		}
 
 		// Aseguramos que el objeto de colisión se referencia correctamente
-		if (colision == null)
-		{
-			Debug.LogWarning("El objeto 'colision' no está asignado en el Inspector.");
-		}
-		else
-		{
-			colision.SetActive(false); // Empezamos con la colisión desactivada
-		}
+		//if (colision == null)
+		//{
+		//	Debug.LogWarning("El objeto 'colision' no está asignado en el Inspector.");
+		//}
+		//else
+		//{
+		//	colision.SetActive(false); // Empezamos con la colisión desactivada
+		//}
 	}
 
 	// FixedUpdate es más apropiado para operaciones de física (Raycast, OverlapBox)
@@ -98,7 +98,7 @@ public class ModularPlayerPiece : MonoBehaviour
 		}
 
 		// 2. Detección de Módulos Cercanos (OverlapBox)
-		DetectNearbyModules();
+		//DetectNearbyModules();
 	}
 
 	// El Update ahora solo se usa para cosas no relacionadas con la física (si las hubiera).

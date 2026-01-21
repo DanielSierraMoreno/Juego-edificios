@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -11,7 +12,17 @@ public class LevelSelector : MonoBehaviour
 
 	// Start is called once before the first execution of Update after the MonoBehaviour is created
 	void Start()
-    {
+	{
+		// Inicia el proceso de espera en lugar de la lógica inmediata.
+		StartCoroutine(ExecuteLogicWhenReady());
+	}
+	IEnumerator ExecuteLogicWhenReady()
+	{
+		// Espera hasta que el GameDataManager confirme que la carga asíncrona ha terminado.
+		while (GameDataManager.Instance == null || !GameDataManager.IsReady)
+		{
+			yield return null;
+		}
 		text.text = this.gameObject.name
 	.Replace("(", "")
 	.Replace(")", "");
@@ -20,7 +31,7 @@ public class LevelSelector : MonoBehaviour
 	.Replace("(", "")
 	.Replace(")", "");
 
-		int i = PlayerPrefs.GetInt(text.text, 0);
+		int i = GameDataManager.Instance.GetInt(text.text, 0);
 
         if(i == 1)
         {
@@ -52,11 +63,11 @@ public class LevelSelector : MonoBehaviour
 
 	}
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+	// Update is called once per frame
+	void Update()
+	{
+
+	}
 
     public void EnterLevel()
     {
@@ -103,7 +114,7 @@ public class LevelSelector : MonoBehaviour
 			// previousLevelName = "Level 1"
 
 			// Uso final:
-			int i = PlayerPrefs.GetInt(previousLevelName, 0);
+			int i = GameDataManager.Instance.GetInt(previousLevelName, 0);
 
 			return i != 0;
 		}
